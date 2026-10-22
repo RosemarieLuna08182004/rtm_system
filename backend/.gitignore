@@ -1,0 +1,20 @@
+node_modules/
+.env
+/certs
+# Compiled output (built on the server with npm run build)
+/build
+/coverage
+package-lock.json
+requests.rest
+
+# Google Cloud credentials
+*.json
+!package.json
+!package-lock.json
+# TypeScript config is needed to build the backend
+!tsconfig.json
+!tsconfig.build.json
+
+# OAuth client secrets
+*client_secret_*.json
+rtm-project-441914-*.json

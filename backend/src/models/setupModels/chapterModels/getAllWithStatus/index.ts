@@ -1,0 +1,25 @@
+import { isFound } from "../../../../functions";
+import { GetService } from "../../../../services";
+import { Error, Success, ChapterQuery, UserQuery } from "../../../../shared";
+import { ModelResponse } from "../../../../types";
+
+export const getAllWithStatus = async (Id: number): Promise<ModelResponse> => {
+  try {
+    if (!Id || typeof Id !== "number") return { data: [], message: Error.m014 };
+    const isExists = await isFound(UserQuery.q006, ["Id"], [Number], [Id]);
+    if (!isExists.data) return { data: [], message: isExists.message };
+    const response = await GetService.byFields(
+      ChapterQuery.q0013,
+      ["UserId"],
+      [Number],
+      [Id],
+    );
+    if (!response) return { data: [], message: Error.m011 };
+    return { data: response, message: Success.m001 };
+  } catch (error: any) {
+    logging.log("----------------------------------------");
+    logging.error("Chapter-Model [getAllWithStatus]:", error.message);
+    logging.log("----------------------------------------");
+    return { data: [], message: Error.m001 };
+  }
+};

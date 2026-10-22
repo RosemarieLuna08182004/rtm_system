@@ -1,0 +1,95 @@
+## TODO
+
+- Create each table on the database
+- [x] Category
+- [x] Chapter
+- [x] Product
+- [x] Sales
+- [x] Term
+- [x] TermLine
+- [x] User
+- [x] UserLine
+- [x] UserTerm
+-
+- Create Services // services are helpers that get, add, remove, update records on the database
+- [ ] [0/2] add record services
+- [ ] [0/5] get record services
+- [ ] [0/2] remove record services
+- [ ] [0/1] update record services
+-
+- Create necessary reusable functions
+- [ ] isFound function finds a record in the database, returns success-boolean & message-string, requires Query, Field, Data
+- [ ] isDefaultRecord function finds a record in the static data, returns success-boolean & message-string, requires Id, Table
+- [ ] generateAccessToken function it generates a hashed access token, returns data-string & message-string, requires UserId
+- [ ] generateRefreshToken function it generates a hashed refresh token, returns data-string & message-string, requires UserId
+- [ ] generateTNumber function it generates a 8 digit string number, returns a data-string & message-string, requires Table //sales
+- [ ] upload image function
+-
+- Create Models on each table // models are functions that has business logic, processes, of the application
+- [ ] add model on category, requires Data, CurrentId
+- [ ] remove model on category, requires Id
+- [ ] update model on category, requires Id, Data, CurrentId
+- [ ] get model on category
+- [ ] get all model on category
+-
+- [ ] add model on chapter, requires Data, CurrentId
+- [ ] remove model on chapter, requires Id
+- [ ] update model on chapter, requires Id, Data, CurrentId
+- [ ] get model on chapter, requires Id
+- [ ] get all model on chapter, requries query
+-
+- [ ] add model on Product, requires Data, CurrentId
+- [ ] remove model on Product, requires Id
+- [ ] update model on Product, requires Id, Data, CurrentId
+- [ ] get model on Product, requires Id
+- [ ] get all model on Product, requries query
+-
+- [ ] add model on Sales, requires Data, CurrentId
+- [ ] remove model on Sales, requires Id // for testing only, sales shouldn't removable
+- [ ] get model on Sales, requires Id
+- [ ] get all model on Sales, requries query
+-
+- [ ] add model on Term, requires Data, CurrentId
+- [ ] remove model on Term, requires Id
+- [ ] update model on Term, requires Id, Data, CurrentId
+- [ ] get model on Term, requires Id
+- [ ] get all model on Term, requries query
+-
+- [ ] add model on TermLine, requires Data, CurrentId
+- [ ] remove model on TermLine, requires Id
+- [ ] update model on TermLine, requires Id, Data, CurrentId
+- [ ] get model on TermLine, requires Id
+- [ ] get all model on TermLine, requries query
+-
+- [ ] add model on User, requires Data, CurrentId
+- [ ] remove model on User, requires Id // for admin only
+- [ ] update model on User, requires Id, Data, CurrentId
+- [ ] get model on User, requires Id
+- [ ] get all model on User, requries query
+-
+- Create a trigger that on create of user it will parrallelly create its UserLine
+- [ ] add model on UserLine, requires Data, CurrentId // optional
+- [ ] remove model on UserLine, requires Id // for testing
+- [ ] update model on UserLine, requires Id, Data, CurrentId
+- [ ] get model on UserLine, requires Id
+-
+- [ ] add model on UserTerm, requires Data, CurrentId
+- [ ] remove model on UserTerm, requires Id // for admin only
+- [ ] update model on UserTerm, requires Id, Data, CurrentId
+- [ ] get model on UserTerm, requires Id
+- [ ] get all model on UserTerm, requries query
+-
+- Create Controllers for each model // in the controller the route is already included, controller is the bridge that connects the model and the view or frontend
+- [ ] [0/5] CategoryClass Controllers
+- [ ] [0/5] ChapterClass Controllers
+- [ ] [0/5] ProductClass Controllers
+- [ ] [0/4] SalesClass Controllers
+- [ ] [0/5] TermClass Controllers
+- [ ] [0/5] TermLineClass Controllers
+- [ ] [0/5] UserClass Controllers
+- [ ] [0/4] UserLineClass Controllers
+- [ ] [0/5] UserTermClass Controllers
+-
+- Create test cases on each functions // unit testing
+- [ ] [0/49] Unit Test of Functions // excluding the controllers
+- [ ] [0/38] Unit Test of Controllers

@@ -1,0 +1,6 @@
+export * from './useAddTerm'
+export * from './useGetAllTerm'
+export * from './useGetTerm'
+export * from './useRemoveTerm'
+export * from './useUpdateTerm'
+export * from './useGetallTermByChapter'

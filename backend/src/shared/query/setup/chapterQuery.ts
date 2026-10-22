@@ -1,0 +1,15 @@
+export enum ChapterQuery {
+  q001 = "SELECT * FROM `chapter`",
+  q002 = "SELECT * FROM chapter WHERE `Id`` = ?",
+  q003 = "SELECT `Id` FROM `chapter` WHERE `Title` = ?",
+  q004 = `SELECT * FROM chapter WHERE CreatedBy = ?`,
+  q005 = `SELECT * FROM chapter WHERE UpdatedBy = ?`,
+  q006 = "SELECT `Id` FROM `chapter` WHERE Id = ?",
+  q007 = `SELECT Id FROM chapter WHERE Id = ? AND (EXISTS (SELECT 1 FROM term WHERE ChapterId = chapter.Id) OR EXISTS (SELECT 1 FROM userterms WHERE ChapterId = chapter.Id))`,
+  q008 = `SELECT Id FROM term WHERE ChapterId = ?`,
+  q009 = `DELETE * FROM \`chapter\``,
+  q0010 = `DELETE FROM chapter WHERE Id = ?`,
+  q0011 = `SELECT chapter.Id, chapter.Coins, chapter.Title, created.Name AS CreatedBy, chapter.DateCreated, updated.Name AS UpdatedBy, chapter.DateUpdated FROM chapter LEFT JOIN user AS created ON created.Id = chapter.CreatedBy LEFT JOIN user AS updated ON updated.Id = chapter.UpdatedBy WHERE chapter.Id = ?`,
+  q0012 = `SELECT chapter.Id, chapter.Title, created.Name AS CreatedBy, chapter.DateCreated, updated.Name AS UpdatedBy, chapter.DateUpdated FROM chapter LEFT JOIN user AS created ON created.Id = chapter.CreatedBy LEFT JOIN user AS updated ON updated.Id = chapter.UpdatedBy`,
+  q0013 = `SELECT chapter.Id, chapter.Title, chapter.Coins, created.Name AS CreatedBy, chapter.DateCreated, updated.Name AS UpdatedBy, chapter.DateUpdated, (SELECT userterms.Status FROM userterms WHERE userterms.ChapterId = chapter.Id AND userterms.UserId = ? LIMIT 1) AS Status, (SELECT COUNT(*) FROM term WHERE term.ChapterId = chapter.Id) AS TermCount FROM chapter LEFT JOIN user AS created ON created.Id = chapter.CreatedBy LEFT JOIN user AS updated ON updated.Id = chapter.UpdatedBy`,
+}

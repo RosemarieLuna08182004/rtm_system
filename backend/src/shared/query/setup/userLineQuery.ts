@@ -1,0 +1,15 @@
+export enum UserLineQuery {
+  q001 = `SELECT * FROM userline`,
+  q002 = `SELECT * FROM userline WHERE Id = ?`,
+  q003 = `SELECT Id FROM userline WHERE Name = ?`,
+  q004 = `SELECT * FROM userline WHERE CreatedBy = ?`,
+  q005 = `SELECT * FROM userline WHERE UpdatedBy = ?`,
+  q006 = `SELECT Id FROM userline WHERE Id = ?`,
+  q007 = `DELETE FROM userline`,
+  q008 = `DELETE FROM userline WHERE Id = ?`,
+  q009 = `SELECT userline.Id, userline.UserId, user.Name, userline.Coins, userline.DateCreated, userline.DateUpdated FROM userline LEFT JOIN user ON user.Id = userline.UserId WHERE userline.Id = ?`,
+  q010 = `SELECT userline.Id, userline.UserId, user.Name, userline.Coins, userline.DateCreated, userline.DateUpdated FROM userline LEFT JOIN user ON user.Id = userline.UserId`,
+  q011 = "SELECT `Id` FROM `userline` WHERE `Id` = ? AND `Coins` > 0",
+  q012 = "SELECT * FROM `userline` WHERE `UserId` = ?",
+  q013 = `SELECT UserId FROM userline WHERE UserId = ?`,
+}

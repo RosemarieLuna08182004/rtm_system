@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/icons/NewIcons/Roots_and_Morphology_Icon.png"
+    },
+    "newArchEnabled": true,
+    "name": "Roots and Morphology",
+    "slug": "roots-and-morphology",
+    "version": "10.0.6",
+    "orientation": "portrait",
+    "icon": "./assets/icons/NewIcons/Roots_and_Morphology_Icon.png",
+    "scheme": "roots-and-morphology",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/icons/NewIcons/Roots_and_Morphology_Icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.rootsandmorphology.app",
+      "versionCode": 100006,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/NewIcons/Roots_and_Morphology_Icon.png"
+      }
+    },
+    "plugins": [
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TermOfTheDay",
+              "label": "Term of the day",
+              "description": "Today's term with its word parts, your streak, progress and recent terms. Resize it to show more.",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "maxResizeWidth": "720dp",
+              "maxResizeHeight": "720dp",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "dd4ea334-bf66-442f-a795-082fb00c45eb"
+      }
+    },
+    "owner": "rosielunas-team"
+  }
+}
