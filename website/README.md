@@ -7,8 +7,9 @@ website/
   index.html   page content
   styles.css   design tokens, layout, light/dark themes
   motion.css   modern layer: glass nav, aurora hero, spotlight cards, ribbon, tilt, animations
-  script.js    theme toggle, mobile menu, scroll reveal, "Break a word apart" demo
-  assets/      app icon and author photo
+  script.js    theme toggle, mobile menu, scroll reveal and other interactions
+  assets/      app icon, author photo and illustrations/ (featured term pictures)
+  web.config   settings for Windows (IIS) hosting such as SmarterASP.NET: .webp pictures, caching
 ```
 
 ## Preview
@@ -25,4 +26,3 @@ the folder at app.netlify.com/drop), Vercel, GitHub Pages or Cloudflare Pages.
 - **Download link** — the "Get it on Google Play" button points to
   `https://play.google.com/store/apps/details?id=com.rootsandmorphology.app` (the app's
   package name). Change it in `index.html` if the store listing uses a different address.
-- **Demo terms** — the four examples in "Break a word apart" are in `script.js` (`TERMS`).

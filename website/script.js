@@ -1,6 +1,6 @@
 // Roots & Morphology — site interactions.
 // Theme (with circular wipe), mobile menu, scroll progress, reveals, split-text, tilt,
-// card spotlight, cursor glow, back-to-top, and the auto-playing word-part demo.
+// card spotlight, cursor glow and back-to-top.
 (function () {
   const root = document.documentElement;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -161,153 +161,31 @@
     });
   }
 
-  // ---------- Word-part demo (auto-plays until you pick a term) ----------
-  const TERMS = {
-    adrenaline: {
-      segments: ['Ad', 'ren', 'al', 'ine'],
-      parts: [
-        { text: 'Ad', meaning: 'to, toward', origin: 'Latin' },
-        { text: 'Ren', meaning: 'the kidney', origin: 'Latin' },
-        { text: '-al', meaning: 'pertaining to', suffix: true },
-        { text: '-ine', meaning: 'substance', suffix: true },
-      ],
-      literal: 'the hormone from the gland at the kidney',
-    },
-    cardiomyopathy: {
-      segments: ['Cardio', 'myo', 'pathy'],
-      parts: [
-        { text: 'Kardia', meaning: 'heart', origin: 'Greek' },
-        { text: 'Myo', meaning: 'muscle', origin: 'Greek' },
-        { text: '-pathy', meaning: 'disease', suffix: true },
-      ],
-      literal: 'a disease of the heart muscle',
-    },
-    hepatitis: {
-      segments: ['Hepat', 'itis'],
-      parts: [
-        { text: 'Hepar', meaning: 'the liver', origin: 'Greek' },
-        { text: '-itis', meaning: 'inflammation', suffix: true },
-      ],
-      literal: 'inflammation of the liver',
-    },
-    osteoporosis: {
-      segments: ['Osteo', 'poro', 'sis'],
-      parts: [
-        { text: 'Osteon', meaning: 'bone', origin: 'Greek' },
-        { text: 'Poros', meaning: 'pore, passage', origin: 'Greek' },
-        { text: '-osis', meaning: 'condition', suffix: true },
-      ],
-      literal: 'a condition of porous bone',
-    },
-  };
-  const ORDER = Object.keys(TERMS);
-  const AUTOPLAY_MS = 5000;
-
-  const wordEl = document.getElementById('demo-word');
-  const partsEl = document.getElementById('demo-parts');
-  const literalEl = document.getElementById('demo-literal');
-  const timerEl = document.querySelector('.demo__timer');
-  const pill = document.querySelector('.demo__pill');
-  const tabs = [...document.querySelectorAll('.demo__tab')];
-  let current = ORDER[0];
-  let autoplay = !reduceMotion;
-  let timer = null;
-
-  const el = (tag, cls, text) => {
-    const node = document.createElement(tag);
-    if (cls) node.className = cls;
-    if (text) node.textContent = text;
-    return node;
-  };
-
-  const movePill = () => {
-    const active = tabs.find((t) => t.dataset.term === current);
-    if (!active || !pill) return;
-    pill.style.left = `${active.offsetLeft}px`;
-    pill.style.width = `${active.offsetWidth}px`;
-    // Keep the active tab visible on narrow screens (scrolls only the tab strip, never the page).
-    const strip = active.parentElement;
-    strip.scrollTo({ left: active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
-  };
-
-  const restartTimer = () => {
-    clearTimeout(timer);
-    timerEl.classList.remove('is-running');
-    if (!autoplay) { timerEl.classList.add('is-off'); return; }
-    void timerEl.offsetWidth;
-    timerEl.style.setProperty('--dur', `${AUTOPLAY_MS}ms`);
-    timerEl.classList.add('is-running');
-    timer = setTimeout(() => show(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length]), AUTOPLAY_MS);
-  };
-
-  const show = (key) => {
-    const term = TERMS[key];
-    if (!term) return;
-    current = key;
-    tabs.forEach((t) => {
-      const selected = t.dataset.term === key;
-      t.setAttribute('aria-selected', String(selected));
-      t.tabIndex = selected ? 0 : -1;
+  // ---------- Illustration lightbox ----------
+  const box = document.getElementById('lightbox');
+  const items = [...document.querySelectorAll('.gallery__btn')];
+  if (box && items.length && typeof box.showModal === 'function') {
+    const img = document.getElementById('lightbox-img');
+    let index = 0;
+    const show = (i) => {
+      index = (i + items.length) % items.length;
+      const { full, term, volume } = items[index].dataset;
+      img.src = full;
+      img.alt = `Illustration of ${term}`;
+      img.style.animation = 'none'; void img.offsetWidth; img.style.animation = '';
+      document.getElementById('lightbox-term').textContent = term;
+      document.getElementById('lightbox-volume').textContent = volume;
+    };
+    items.forEach((btn, i) => btn.addEventListener('click', () => { show(i); box.showModal(); }));
+    box.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => show(index + Number(b.dataset.step))));
+    box.querySelector('[data-close]').addEventListener('click', () => box.close());
+    box.addEventListener('click', (e) => { if (e.target === box) box.close(); });   // click outside the picture
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') show(index + 1);
+      if (e.key === 'ArrowLeft') show(index - 1);
     });
-    movePill();
-
-    // The word, split into its pieces.
-    wordEl.replaceChildren();
-    term.segments.forEach((s, i) => {
-      const seg = el('span', `seg${i % 2 ? ' seg--alt' : ''}`, s);
-      seg.style.animationDelay = `${i * 90}ms`;
-      wordEl.append(seg);
-    });
-
-    // The chips.
-    partsEl.replaceChildren();
-    term.parts.forEach((part, i) => {
-      if (i > 0) {
-        const plus = el('span', 'demo__plus', '+');
-        plus.style.animationDelay = `${250 + i * 140 - 60}ms`;
-        partsEl.append(plus);
-      }
-      const chip = el('div', `part${part.suffix ? ' part--suffix' : ''}`);
-      chip.style.animationDelay = `${250 + i * 140}ms`;
-      chip.append(el('b', '', part.text), el('small', '', part.meaning), el('em', '', part.suffix ? 'suffix' : part.origin));
-      chip.addEventListener('animationend', () => chip.classList.add('is-in'), { once: true });
-      partsEl.append(chip);
-    });
-
-    literalEl.replaceChildren(el('b', '', 'Literally: '), document.createTextNode(`“${term.literal}”`));
-    literalEl.style.animation = 'none';
-    void literalEl.offsetWidth;
-    literalEl.style.animation = '';
-    literalEl.style.animationDelay = `${350 + term.parts.length * 140}ms`;
-
-    restartTimer();
-  };
-
-  const pick = (key) => { autoplay = false; show(key); };
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => pick(tab.dataset.term));
-    tab.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const i = tabs.indexOf(tab) + (e.key === 'ArrowRight' ? 1 : -1);
-      const next = tabs[(i + tabs.length) % tabs.length];
-      next.focus();
-      pick(next.dataset.term);
-    });
-  });
-
-  // Only auto-play while the demo is on screen.
-  const demo = document.querySelector('.demo');
-  if ('IntersectionObserver' in window && demo) {
-    new IntersectionObserver(([entry]) => {
-      if (!autoplay) return;
-      if (entry.isIntersecting) restartTimer();
-      else { clearTimeout(timer); timerEl.classList.remove('is-running'); }
-    }, { threshold: 0.3 }).observe(demo);
+    box.addEventListener('close', () => items[index].focus());
   }
-  window.addEventListener('resize', movePill);
-  document.fonts?.ready.then(movePill);
-  show(current);
-  clearTimeout(timer); // start once the demo scrolls into view
 
   document.getElementById('year').textContent = new Date().getFullYear();
 })();

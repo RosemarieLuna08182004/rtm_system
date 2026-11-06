@@ -128,32 +128,6 @@ main, .footer { position: relative; z-index: 1; }
 [data-reveal].section__head > :nth-child(3) { transition-delay: .16s; }
 [data-reveal].section__head.revealed > * { clip-path: inset(-30% -10% -30% -10%); transform: none; }
 
-/* ---------- Demo: glass, sliding pill tabs, auto-play timer ---------- */
-.demo { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: var(--glass-border); position: relative; overflow: visible; }
-.demo::before {
-  content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: var(--card-border-glow); pointer-events: none;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
-}
-.demo__tabs { position: relative; background: transparent; border-bottom: 1px solid var(--border); border-radius: var(--r-2xl) var(--r-2xl) 0 0; }
-.demo__tab { position: relative; z-index: 1; }
-.demo__tab:hover { background: transparent; }
-.demo__tab[aria-selected="true"] { background: transparent; box-shadow: none; color: #fff; }
-.demo__pill {
-  position: absolute; z-index: 0; top: 10px; left: 10px; width: 0; height: calc(100% - 20px); border-radius: var(--r-md);
-  background: linear-gradient(135deg, var(--blue-700), var(--blue-500)); box-shadow: var(--shadow-primary);
-  transition: left .45s var(--ease-out), width .45s var(--ease-out);
-}
-.demo__timer { width: 120px; height: 3px; border-radius: 3px; margin: -8px auto 22px; background: var(--border); overflow: hidden; transition: opacity var(--base); }
-.demo__timer i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--cyan)); transform-origin: 0 50%; transform: scaleX(0); }
-.demo__timer.is-running i { animation: timer var(--dur, 5s) linear forwards; }
-.demo__timer.is-off { opacity: 0; }
-@keyframes timer { to { transform: scaleX(1); } }
-.demo__word .seg { display: inline-block; opacity: 0; transform: translateY(14px); animation: chipIn .5s var(--ease-out) forwards; }
-.demo__word .seg--alt { color: var(--primary); }
-.part { cursor: default; }
-.part.is-in { opacity: 1; transform: none; animation: none; transition: transform var(--base) var(--ease-bounce), box-shadow var(--base), border-color var(--base); }
-.part.is-in:hover { transform: translateY(-4px) scale(1.04); box-shadow: var(--shadow-md); border-color: var(--blue-400); }
-
 /* ---------- Spotlight + glowing-border cards ---------- */
 .card, .pill-card, .step { position: relative; overflow: hidden; isolation: isolate; }
 .card::before, .pill-card::before, .step::before {
@@ -254,7 +228,7 @@ main, .footer { position: relative; z-index: 1; }
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .word > span { transform: none; }
-  .ribbon__track, .orb, .section--dark::before, .author__photo::before, .card--hero { animation: none; }
+  .ribbon__track, .orb, .section--dark::before, .author__photo::before, .card--hero, .mini-illus__frame { animation: none; }
   [data-reveal].section__head > * { clip-path: none; transform: none; }
   .cursor-glow { display: none; }
 }
@@ -268,8 +242,4 @@ main, .footer { position: relative; z-index: 1; }
   .nav__actions { gap: 6px; }
 }
 
-/* ---------- Readable suffix chips in dark mode ---------- */
-:root[data-theme="dark"] .part--suffix b { color: var(--blue-400); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .part--suffix b { color: var(--blue-400); } }
-/* Origin labels ("Latin", "suffix") sit on a tinted chip, so they use the stronger grey. */
-.part em { color: var(--text-2); }
+
