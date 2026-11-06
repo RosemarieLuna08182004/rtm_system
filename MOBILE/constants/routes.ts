@@ -11,13 +11,12 @@ export enum RoutesChannel {
     TERM = "/terms",
     TERM_LINE = "/term-line",
     PROFILE = "/profile",
-    SETTINGS = "/settings",
     CHANGE_PASSWORD = "/change-password",
     TERMS_AND_CONDITIONS = "/terms-condition",
     VOLUMES = "/volumes",
     SEARCH = "/search",
-    ROOT = "/root",
     DISPLAY_SETTINGS = "/display-settings",
     FAQ = "/faq",
-    ABOUT = "/about"
+    ABOUT = "/about",
+    ILLUSTRATIONS = "/illustrations"
 }

@@ -15,35 +15,8 @@ interface Faq {
 
 const FAQS: { section: string; items: Faq[] }[] = [
 	{
-		section: 'Getting started',
+		section: 'Home-screen widget',
 		items: [
-			{ q: 'What is Roots and Morphology?', a: 'It helps you learn medical and anatomy terms by breaking each one into its parts (roots, prefixes and suffixes) and explaining what each part means. Once you know the parts, you can work out the meaning of many new words on your own.' },
-			{ q: 'How do I find a term?', a: 'Tap the search bar on Home to search every volume at once. Small spelling mistakes are fine. You can also open Volumes, pick a subject, and search inside its term list.' },
-			{ q: 'What does “Continue where you left off” show?', a: 'The last term you opened, so you can jump straight back in. The terms you opened before it appear as chips under the card.' },
-		],
-	},
-	{
-		section: 'Studying a term',
-		items: [
-			{ q: 'What are word parts?', a: 'The chips at the top of a term, e.g. Ad (to) + Ren (the kidney) + -al. Tap a root to see every other term that uses it. Hold any part to hear it spoken.' },
-			{ q: 'How do I hear how a term is pronounced?', a: 'Tap the speaker button on the Word parts card. It uses your phone’s text-to-speech voice. If you don’t see the button, your phone has no speech voice installed. You can add one in your phone’s Settings under Text-to-speech.' },
-			{ q: 'Can I write my own notes?', a: 'Yes. Tap “+ Add” on the My note card of any term. Notes are saved on this phone only, so they won’t appear if you sign in on another device.' },
-			{ q: 'How do I zoom into the illustration?', a: 'Tap the picture to open it full screen, then pinch to zoom.' },
-		],
-	},
-	{
-		section: 'Bookmarks',
-		items: [
-			{ q: 'How do I bookmark a term?', a: 'Tap the bookmark icon on a term in the list, or at the top right of the term screen. All your bookmarks are in the Bookmarks tab, grouped by volume.' },
-			{ q: 'Why is a volume or term locked?', a: 'Locked volumes and terms aren’t available to your account yet. They open automatically once they’re unlocked for you.' },
-		],
-	},
-	{
-		section: 'Comfort and accessibility',
-		items: [
-			{ q: 'Can I make the text bigger?', a: 'Yes. Go to Profile → Display & Comfort and choose a display size from 90% to 175%. It changes the text on every screen.' },
-			{ q: 'How do I zoom in on a screen?', a: 'Spread two fingers on any screen to magnify it up to 300%, and drag with two fingers to move around. A bar at the bottom lets you zoom in, zoom out or reset. You can turn this off in Display & Comfort.' },
-			{ q: 'Is there a dark mode?', a: 'Yes. In Display & Comfort choose Dark, Light, or System to follow your phone.' },
 			{ q: 'How do I add the home-screen widget?', a: 'On Android, touch and hold an empty spot on your home screen, tap Widgets, find Roots and Morphology, and drag the widget onto your home screen. It shows a term of the day and your last viewed term. Open the app once after adding it so it can load your terms.' },
 		],
 	},
@@ -51,8 +24,8 @@ const FAQS: { section: string; items: Faq[] }[] = [
 		section: 'Account',
 		items: [
 			{ q: 'I forgot my password. What do I do?', a: 'On the sign-in screen tap “Forgot password”, enter your email, and we’ll send you a code to set a new password.' },
-			{ q: 'How do I change my password?', a: 'Go to Profile → Settings → Change password. You’ll need your current password.' },
-			{ q: 'How do I edit my name or photo?', a: 'On Profile, tap the pencil button on your picture.' },
+			{ q: 'How do I change my password?', a: 'Go to Profile → Change password. You’ll need your current password.' },
+			{ q: 'How do I edit my name or photo?', a: 'On Profile, tap Account, or the pencil button on your picture.' },
 			{ q: 'Does the app work offline?', a: 'You need an internet connection to load terms. If the connection drops, the app shows a notice and carries on where you were when you’re back online.' },
 		],
 	},

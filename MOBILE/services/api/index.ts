@@ -33,6 +33,7 @@ export interface BookmarkedTerm {
   UserTermsId: number;
   ChapterId: number;
   Status: string;
+  Illustration?: string | null;
 }
 
 export interface BookmarkGroup {
@@ -105,6 +106,11 @@ export interface NewTerm extends RootTerm {
   DateCreated: string;
 }
 
+export interface IllustratedTerm extends IndexTerm {
+  ChapterTitle: string;
+  Illustration: string;
+}
+
 export const studyApi = {
   // Every term with its volume and lock status (search, Home, progress).
   getIndex: (signal?: Signal) => get<TermIndex>(`${API}/user/term/me/index`, signal),
@@ -113,6 +119,9 @@ export const studyApi = {
     get<RootTerm[]>(`${API}/user/term/me/by-root?root=${encodeURIComponent(root)}`, signal),
   // The most recently added terms, newest first.
   getNewTerms: (limit: number, signal?: Signal) => get<NewTerm[]>(`${API}/user/term/me/new-terms?limit=${limit}`, signal),
+  // Illustrated terms from unlocked volumes, a new selection each day (day = "YYYY-MM-DD").
+  getIllustrations: (limit: number, day: string, signal?: Signal) =>
+    get<IllustratedTerm[]>(`${API}/user/term/me/illustrations?limit=${limit}&day=${day}`, signal),
 };
 
 export const bookmarkApi = {

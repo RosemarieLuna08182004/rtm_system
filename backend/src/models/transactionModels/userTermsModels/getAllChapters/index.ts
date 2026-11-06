@@ -149,7 +149,7 @@ export const getAllChapterByBookmarkModel = async (
 export interface BookmarkGroup {
   ChapterId: number;
   Title: string;
-  terms: Array<{ TermId: number; Term: string; UserTermsId: number; ChapterId: number; Status: string }>;
+  terms: Array<{ TermId: number; Term: string; UserTermsId: number; ChapterId: number; Status: string; Illustration: string | null }>;
 }
 
 // One query for the Bookmarks tab: every bookmark of the user, grouped by chapter
@@ -175,6 +175,7 @@ export const getBookmarksGroupedModel = async (
         UserTermsId: Number(row.UserTermsId),
         ChapterId: chapterId,
         Status: row.Status,
+        Illustration: row.Illustration ? String(row.Illustration).trim() : null,
       });
     }
     return { data: groups, message: Success.m001 };
@@ -277,6 +278,33 @@ export const getNewTermsModel = async (UserId: number, Limit: number): Promise<M
   } catch (error: any) {
     logging.log("----------------------------------------");
     logging.error("UserTermsTable-Model [getNewTermsModel]:", error.message);
+    logging.log("----------------------------------------");
+    return { data: [], message: Error.m001 };
+  }
+};
+
+// Illustrated terms from the caller's unlocked chapters, in a daily order, for the Home carousel.
+export const getIllustrationsModel = async (UserId: number, Limit: number, Day: string): Promise<ModelResponse> => {
+  try {
+    const chapters = await getChapterStatuses(UserId);
+    const rows = await GetService.byFields(UserTermsQuery.q028, ["Day"], [String], [Day]);
+    const terms = [];
+    for (const row of rows ?? []) {
+      const chapter = chapters.get(Number(row.ChapterId));
+      if (chapter?.Status !== "Unlock") continue;
+      terms.push({
+        TermId: Number(row.TermId),
+        Term: String(row.Term ?? "").trim(),
+        ChapterId: Number(row.ChapterId),
+        ChapterTitle: chapter.Title,
+        Illustration: String(row.Illustration),
+      });
+      if (terms.length >= Limit) break;
+    }
+    return { data: terms, message: Success.m001 };
+  } catch (error: any) {
+    logging.log("----------------------------------------");
+    logging.error("UserTermsTable-Model [getIllustrationsModel]:", error.message);
     logging.log("----------------------------------------");
     return { data: [], message: Error.m001 };
   }

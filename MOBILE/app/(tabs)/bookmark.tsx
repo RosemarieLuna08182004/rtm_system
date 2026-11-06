@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { StyleSheet, RefreshControl, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { BookmarkOutlineIcon } from '@/constants';
 import { AnimatedSearch } from '@/components/Filters/SearchFilter';
@@ -151,6 +152,28 @@ const styles = StyleSheet.create({
   },
 });
 
+// Dr. Oliva's message to professors, shown at the top of Bookmarks.
+const ProfessorNote = () => (
+  <S.View
+    className="flex-row rounded-2xl p-4 bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-blue-900"
+    style={{ shadowColor: '#1d4ed8', shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 }}
+  >
+    <S.View className="h-10 w-10 rounded-full items-center justify-center bg-blue-700">
+      <MaterialCommunityIcons name="school-outline" size={22} color="#ffffff" />
+    </S.View>
+    <S.View className="flex-1 ml-3">
+      <S.Text className="text-sm uppercase tracking-wider font-pbold text-blue-800 dark:text-blue-300">Dear A&P Professors</S.Text>
+      <S.Text className="mt-1 text-sm font-pregular leading-5 text-slate-700 dark:text-slate-300">
+        Introduce important and testable terms from the index of terms. Encourage students to{' '}
+        <S.Text className="font-pbold text-blue-800 dark:text-blue-300">BOOKMARK</S.Text>.
+      </S.Text>
+      <S.Text className="mt-1 text-sm font-pregular leading-5 text-slate-700 dark:text-slate-300">
+        Bookmarked terms are expandable for further notes.
+      </S.Text>
+    </S.View>
+  </S.View>
+);
+
 export default function Bookmark() {
   const router = useRouter();
   const { auth } = useAuth();
@@ -294,6 +317,9 @@ export default function Bookmark() {
             {/* Header with count and search */}
             {sections.length > 0 && !showEmptyState && (
               <S.View className="bg-slate-100 dark:bg-slate-950 z-10 px-5 py-5">
+                <S.View className="mb-5 px-3">
+                  <ProfessorNote />
+                </S.View>
                 <S.View className="mb-4 px-3">
                   <S.Text className="uppercase text-gray-600 dark:text-slate-300 text-lg font-pbold tracking-wider">
                     Bookmarks <S.Text className="text-gray-400 dark:text-slate-500 text-base font-pregular">({totalFilteredCount})</S.Text>
@@ -325,6 +351,9 @@ export default function Bookmark() {
               >
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <View style={{ maxWidth: 400, width: '100%', padding: 20 }}>
+                    <View style={{ marginBottom: 24 }}>
+                      <ProfessorNote />
+                    </View>
                     <View style={{ alignItems: 'center', marginBottom: 24 }}>
                       <View style={[styles.iconContainer, { backgroundColor: theme.card }]}>
                         <S.Image 

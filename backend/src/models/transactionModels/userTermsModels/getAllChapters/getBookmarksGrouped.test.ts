@@ -11,7 +11,7 @@ describe("getBookmarksGroupedModel", () => {
 
   it("groups rows by chapter, keeping the query's order", async () => {
     (GetService.byFields as jest.Mock).mockResolvedValue([
-      { ChapterId: 2, ChapterTitle: "Bones", TermId: 10, Term: "Femur", UserTermsId: 100, Status: "Bookmark" },
+      { ChapterId: 2, ChapterTitle: "Bones", TermId: 10, Term: "Femur", UserTermsId: 100, Status: "Bookmark", Illustration: " https://x/femur.jpg " },
       { ChapterId: 2, ChapterTitle: "Bones", TermId: 11, Term: "Tibia", UserTermsId: 101, Status: "Bookmark" },
       { ChapterId: 5, ChapterTitle: "Heart", TermId: 20, Term: null, UserTermsId: 102, Status: "Bookmark" },
     ]);
@@ -22,14 +22,14 @@ describe("getBookmarksGroupedModel", () => {
         ChapterId: 2,
         Title: "Bones",
         terms: [
-          { TermId: 10, Term: "Femur", UserTermsId: 100, ChapterId: 2, Status: "Bookmark" },
-          { TermId: 11, Term: "Tibia", UserTermsId: 101, ChapterId: 2, Status: "Bookmark" },
+          { TermId: 10, Term: "Femur", UserTermsId: 100, ChapterId: 2, Status: "Bookmark", Illustration: "https://x/femur.jpg" },
+          { TermId: 11, Term: "Tibia", UserTermsId: 101, ChapterId: 2, Status: "Bookmark", Illustration: null },
         ],
       },
       {
         ChapterId: 5,
         Title: "Heart",
-        terms: [{ TermId: 20, Term: "", UserTermsId: 102, ChapterId: 5, Status: "Bookmark" }],
+        terms: [{ TermId: 20, Term: "", UserTermsId: 102, ChapterId: 5, Status: "Bookmark", Illustration: null }],
       },
     ]);
   });

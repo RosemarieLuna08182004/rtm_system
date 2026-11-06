@@ -14,7 +14,8 @@ import {
   getBookmarksGroupedModel,
   getTermIndexModel,
   getTermsByRootModel,
-  getNewTermsModel
+  getNewTermsModel,
+  getIllustrationsModel
 } from "./getAllChapters";
 
 class UserTermsModel {
@@ -31,6 +32,7 @@ class UserTermsModel {
   getTermIndex: typeof getTermIndexModel;
   getTermsByRoot: typeof getTermsByRootModel;
   getNewTerms: typeof getNewTermsModel;
+  getIllustrations: typeof getIllustrationsModel;
   getByChapter: typeof getByChapter;
   remove: typeof removeModel;
   update: typeof updateModel;
@@ -49,6 +51,7 @@ class UserTermsModel {
     this.getTermIndex = getTermIndexModel;
     this.getTermsByRoot = getTermsByRootModel;
     this.getNewTerms = getNewTermsModel;
+    this.getIllustrations = getIllustrationsModel;
     this.getByChapter = getByChapter;
     this.remove = removeModel;
     this.update = updateModel;

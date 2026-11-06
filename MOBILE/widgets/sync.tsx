@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
 import { IndexChapter, IndexTerm } from '@/services/api';
-import { WordBreakdown } from '@/utils/morphology';
 import { clearSnapshot, loadShuffle, loadSnapshot, mergeDays, saveSnapshot, viewFrom, WIDGET_NAME, WidgetSnapshot, WidgetTerm } from './data';
 
 // Called by the app to refresh the home-screen widget. Safe on iOS and on older builds
@@ -21,24 +20,20 @@ export const redrawWidget = async () => {
 
 let lastSaved = '';
 
-export const syncWidget = async ({ chapters, terms, unlocked, viewedSet, recent, daily, dailyBreakdown }: {
+export const syncWidget = async ({ chapters, terms, unlocked, viewedSet, recent, daily }: {
   chapters: IndexChapter[];
   terms: IndexTerm[];
   unlocked: Set<number>;
   viewedSet: Set<number>;
   recent: (WidgetTerm & { viewedAt: number })[];
   daily?: IndexTerm;
-  dailyBreakdown?: WordBreakdown;
 }) => {
   if (Platform.OS !== 'android') return;
   const pool = terms.filter((t) => unlocked.has(t.ChapterId));
-  const parts = daily && dailyBreakdown?.parts.length
-    ? { TermId: daily.TermId, parts: dailyBreakdown.parts.map((p) => [p.text, p.meaning] as [string, string?]), literal: dailyBreakdown.literal }
-    : undefined;
   const viewedCount = pool.reduce((n, t) => n + (viewedSet.has(t.TermId) ? 1 : 0), 0);
 
   // Skip the write and redraw when nothing the widget shows has changed.
-  const fingerprint = [pool.length, pool[0]?.TermId, viewedCount, recent.slice(0, 5).map((r) => `${r.TermId}@${r.viewedAt}`).join(','), parts?.TermId, parts?.parts.length, chapters.length].join('|');
+  const fingerprint = [pool.length, pool[0]?.TermId, viewedCount, recent.slice(0, 5).map((r) => `${r.TermId}@${r.viewedAt}`).join(','), chapters.length].join('|');
   if (fingerprint === lastSaved) return;
   lastSaved = fingerprint;
 
@@ -50,8 +45,6 @@ export const syncWidget = async ({ chapters, terms, unlocked, viewedSet, recent,
       pool: pool.map((t) => [t.TermId, t.ChapterId, t.Term]),
       viewedCount,
       recent: recent.slice(0, 5).map((r) => ({ TermId: r.TermId, ChapterId: r.ChapterId, Term: r.Term })),
-      // Keep yesterday's word parts only if they're still for today's term.
-      dailyParts: parts ?? (previous?.dailyParts?.TermId === daily?.TermId ? previous?.dailyParts : undefined),
       days: mergeDays(previous?.days, recent.map((r) => r.viewedAt)),
     };
     await saveSnapshot(snapshot);

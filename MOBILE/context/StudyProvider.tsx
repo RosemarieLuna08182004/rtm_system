@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getItem, setItem } from '@/utils/asyncStorage';
 
 // Per-account study data kept on this device: viewed terms (progress), recently viewed
-// terms ("Continue where you left off"), personal notes and recent searches.
+// terms ("Continue where you left off") and recent searches.
 
 export interface RecentTerm {
   TermId: number;
@@ -12,15 +12,9 @@ export interface RecentTerm {
   viewedAt: number;
 }
 
-export interface TermNote {
-  text: string;
-  updatedAt: number;
-}
-
 interface StudyData {
   viewed: number[];
   recent: RecentTerm[];
-  notes: Record<string, TermNote>;
   searches: string[];
 }
 
@@ -28,12 +22,11 @@ interface StudyContextType extends StudyData {
   loaded: boolean;
   viewedSet: Set<number>;
   recordView: (term: Omit<RecentTerm, 'viewedAt'>) => void;
-  saveNote: (TermId: number, text: string) => void;
   addSearch: (query: string) => void;
   clearSearches: () => void;
 }
 
-const EMPTY: StudyData = { viewed: [], recent: [], notes: {}, searches: [] };
+const EMPTY: StudyData = { viewed: [], recent: [], searches: [] };
 const MAX_RECENT = 10;
 const MAX_SEARCHES = 8;
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
@@ -60,7 +53,6 @@ export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           setData({
             viewed: Array.isArray(parsed.viewed) ? parsed.viewed : [],
             recent: Array.isArray(parsed.recent) ? parsed.recent : [],
-            notes: parsed.notes && typeof parsed.notes === 'object' ? parsed.notes : {},
             searches: Array.isArray(parsed.searches) ? parsed.searches : [],
           });
         }
@@ -94,15 +86,6 @@ export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
   }, [update]);
 
-  const saveNote = useCallback((TermId: number, text: string) => {
-    update((prev) => {
-      const notes = { ...prev.notes };
-      if (text.trim()) notes[String(TermId)] = { text: text.trim(), updatedAt: Date.now() };
-      else delete notes[String(TermId)];
-      return { ...prev, notes };
-    });
-  }, [update]);
-
   const addSearch = useCallback((query: string) => {
     const q = query.trim();
     if (q.length < 2) return;
@@ -119,10 +102,9 @@ export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     loaded,
     viewedSet: new Set(data.viewed),
     recordView,
-    saveNote,
     addSearch,
     clearSearches,
-  }), [data, loaded, recordView, saveNote, addSearch, clearSearches]);
+  }), [data, loaded, recordView, addSearch, clearSearches]);
 
   return <StudyContext.Provider value={value}>{children}</StudyContext.Provider>;
 };

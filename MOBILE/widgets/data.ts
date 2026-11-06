@@ -16,19 +16,12 @@ export interface WidgetTerm {
   Term: string;
 }
 
-export interface WidgetParts {
-  TermId: number;
-  parts: [string, string?][];               // [text, meaning], e.g. ["Ren", "the kidney"]
-  literal?: string;
-}
-
 export interface WidgetSnapshot {
   savedAt: number;
   chapters: Record<string, string>;          // ChapterId → volume title
   pool: [number, number, string][];          // unlocked terms as [TermId, ChapterId, Term], Home's order
   viewedCount?: number;                      // unlocked terms opened at least once
   recent?: WidgetTerm[];                     // last terms viewed, newest first
-  dailyParts?: WidgetParts;                  // word parts of today's term
   days?: string[];                           // days you studied ("YYYY-MM-DD"), for the streak
   last?: WidgetTerm;                         // last term viewed (kept for older snapshots)
 }
@@ -36,7 +29,7 @@ export interface WidgetSnapshot {
 export type ViewTerm = WidgetTerm & { volume: string };
 
 export interface WidgetView {
-  daily?: ViewTerm & { parts?: WidgetParts; isToday: boolean };
+  daily?: ViewTerm & { isToday: boolean };
   recent: ViewTerm[];
   viewed: number;
   total: number;
@@ -98,7 +91,6 @@ export const viewFrom = (snapshot: WidgetSnapshot | null, shuffle = 0): WidgetVi
     daily: picked
       ? {
           TermId: picked[0], ChapterId: picked[1], Term: picked[2], volume: volume(picked[1]),
-          parts: snapshot.dailyParts?.TermId === picked[0] ? snapshot.dailyParts : undefined,
           isToday: shuffle % Math.max(pool.length, 1) === 0,
         }
       : undefined,

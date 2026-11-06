@@ -31,7 +31,7 @@ export function AppErrorBoundary({ error, retry }: ErrorBoundaryProps) {
         Something went wrong
       </Text>
       <Text style={{ marginTop: 8, fontSize: 14, lineHeight: 21, fontFamily: 'Poppins_400Regular', color: c.text, textAlign: 'center', maxWidth: 320 }}>
-        This screen ran into a problem. Your bookmarks and notes are safe. Try again, or go back and open it once more.
+        This screen ran into a problem. Your bookmarks are safe. Try again, or go back and open it once more.
       </Text>
       <TouchableOpacity
         onPress={tryAgain}

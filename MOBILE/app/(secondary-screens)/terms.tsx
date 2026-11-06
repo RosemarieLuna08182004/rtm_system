@@ -201,13 +201,10 @@ export default function TermScreen() {
 											elevation: 3,
 										}}
 									>
-										<S.View className="h-12 w-12 rounded-xl items-center justify-center bg-blue-900/40">
-											<MaterialCommunityIcons name={locked ? 'lock-outline' : style.icon} size={26} color="#ffffff" />
-										</S.View>
-										<S.Text className="flex-1 ml-4 text-white text-base font-psemibold" numberOfLines={2}>
+										<S.Text className="flex-1 ml-2 py-3 text-white text-base font-psemibold" numberOfLines={2}>
 											{item.Term}
 										</S.Text>
-										<MaterialCommunityIcons name="chevron-right" size={24} color="#ffffff" style={{ marginRight: 8 }} />
+										<MaterialCommunityIcons name={locked ? 'lock-outline' : 'chevron-right'} size={24} color="#ffffff" style={{ marginRight: 8 }} />
 										<BookmarkButton
 											Variant="tile"
 											Status={item.Status}

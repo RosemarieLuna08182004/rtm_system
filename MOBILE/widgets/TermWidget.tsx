@@ -5,8 +5,8 @@ import { BOOKMARKS_LINK, SEARCH_LINK, termLink, ViewTerm, WidgetView } from './d
 // Home-screen widget. It changes layout with its size, so you can resize it freely:
 //   small  (2×1, 3×1)  – today's term
 //   square (2×2)       – term, volume and "Another term"
-//   medium (4×2)       – + word parts, streak and "Continue"
-//   large  (4×3 and up) – + meaning, progress bar, recent terms and quick actions
+//   medium (4×2)       – + streak and "Continue"
+//   large  (4×3 and up) – + progress bar, recent terms and quick actions
 
 const WHITE = '#ffffff';
 const SOFT = '#dbeafe';
@@ -14,9 +14,6 @@ const CHIP = 'rgba(255, 255, 255, 0.18)' as const;
 const PAD = 14;
 
 type Size = { width: number; height: number };
-
-const partsLine = (view: WidgetView) =>
-  view.daily?.parts?.parts.map(([text, meaning]) => (meaning ? `${text} (${meaning})` : text)).join('  +  ') ?? '';
 
 function Chip({ text, uri, action, label, flex }: { text: string; uri?: string; action?: string; label: string; flex?: number }) {
   return (
@@ -118,7 +115,6 @@ export function TermWidget({ view, size }: { view: WidgetView | null; size: Size
   const { width, height } = size;
   const inner = Math.max(40, width - PAD * 2);
   const last = recent.find((t) => t.TermId !== daily.TermId);
-  const parts = partsLine(view);
   const another = <Chip text="🎲 Another" action="NEXT_TERM" label="Show another term" flex={1} />;
   const backToToday = !daily.isToday && <Chip text="↺ Today" action="TODAY_TERM" label="Back to today's term" flex={1} />;
   const root = { height: 'match_parent' as const, width: 'match_parent' as const, borderRadius: 22, padding: PAD, flexDirection: 'column' as const };
@@ -139,20 +135,18 @@ export function TermWidget({ view, size }: { view: WidgetView | null; size: Size
       <FlexWidget style={root}>
         <Header view={view} showStreak={false} />
         <DailyTerm term={daily} big={false} lines={height >= 170 ? 3 : 2} />
-        {height >= 170 && !!parts && <TextWidget text={parts} style={{ fontSize: 12, color: WHITE, marginTop: 6 }} maxLines={3} truncate="END" />}
         <FlexWidget style={{ flex: 1 }} />
         <FlexWidget style={{ width: 'match_parent', flexDirection: 'row', flexGap: 6 }}>{another}</FlexWidget>
       </FlexWidget>
     );
   }
 
-  // 4×2: term, word parts, streak and actions.
+  // 4×2: term, streak and actions.
   if (height < 170) {
     return (
       <FlexWidget style={root}>
         <Header view={view} showStreak />
         <DailyTerm term={daily} big lines={1} />
-        {!!parts && height >= 120 && <TextWidget text={parts} style={{ fontSize: 12, color: WHITE, marginTop: 4 }} maxLines={1} truncate="END" />}
         <FlexWidget style={{ flex: 1 }} />
         <FlexWidget style={{ width: 'match_parent', flexDirection: 'row', flexGap: 6 }}>
           {another}
@@ -170,11 +164,6 @@ export function TermWidget({ view, size }: { view: WidgetView | null; size: Size
     <FlexWidget style={root}>
       <Header view={view} showStreak />
       <DailyTerm term={daily} big lines={2} />
-      {!!parts && <TextWidget text={parts} style={{ fontSize: 13, color: WHITE, marginTop: 6 }} maxLines={2} truncate="END" />}
-      {!!daily.parts?.literal && height >= 230 && (
-        <TextWidget text={`“${daily.parts.literal}”`} style={{ fontSize: 12, fontStyle: 'italic', color: SOFT, marginTop: 2 }} maxLines={2} truncate="END" />
-      )}
-      {!parts && <TextWidget text="Tap the term to see its word parts" style={{ fontSize: 12, color: SOFT, marginTop: 6 }} maxLines={1} />}
       {height >= 210 && <Progress view={view} width={inner} />}
       {recentRows > 0 && recent.length > 0 && <RecentList terms={recent.slice(0, recentRows)} />}
       <FlexWidget style={{ flex: 1 }} />

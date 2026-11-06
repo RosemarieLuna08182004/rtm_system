@@ -200,6 +200,25 @@ export default class UserTermController {
     }
   } // GET-NEW-TERMS
 
+  // Illustrated terms for the Home carousel (?limit=1–20, default 8; ?day=YYYY-MM-DD, the phone's date).
+  @Route("get", "/me/illustrations", TokenHandler.verifyToken)
+  async getIllustrations(req: LoginRequest, res: Response, next: NextFunction) {
+    try {
+      const UserId = getAuthUserId(req);
+      if (!UserId) return res.status(403).json({ data: false, message: Error.m034 });
+      const requested = parseInt(String(req.query.limit ?? "8"), 10);
+      const limit = Number.isInteger(requested) ? Math.min(20, Math.max(1, requested)) : 8;
+      const day = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query.day ?? "")) ? String(req.query.day) : new Date().toISOString().slice(0, 10);
+      const response = await UserTermsModel.getIllustrations(UserId, limit, day);
+      return res.status(200).json({ data: response.data, message: response.message });
+    } catch (error: any) {
+      logging.log("----------------------------------------");
+      logging.error("UserTerms-Controller [me/illustrations]:", error.message);
+      logging.log("----------------------------------------");
+      return res.status(500).json({ data: false, message: Error.m001 });
+    }
+  } // GET-ILLUSTRATIONS
+
   // Terms that share a root word (e.g. ?root=Ren), for the word-part breakdown.
   @Route("get", "/me/by-root", TokenHandler.verifyToken)
   async getTermsByRoot(req: LoginRequest, res: Response, next: NextFunction) {
