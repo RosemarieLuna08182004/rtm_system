@@ -5,3 +5,4 @@ export * from './termLineQuery'
 export * from './termQuery'
 export * from './userQuery'
 export * from './userLineQuery'
+export * from './notificationQuery';

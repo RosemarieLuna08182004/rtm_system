@@ -4,9 +4,7 @@ import { useWindowDimensions, FlatList, View, StyleSheet, Image, Alert, Animated
 import { slides } from "@/shared";
 import { useRouter } from "expo-router";
 import * as S from '@/styles';
-import { ONBOARDING_SEEN_KEY, RoutesChannel } from "@/constants";
-import { setItem } from "@/utils/asyncStorage";
-import { useThemeColors } from "@/context/PreferencesProvider";
+import { RoutesChannel } from "@/constants";
 import { useAuth } from "@/hooks";
 import { Error, ErrorTitle } from "@/shared";
 
@@ -17,7 +15,6 @@ export const OnBoardingCon: SFC = () => {
   const flatListRef = useRef<FlatList>(null);
   const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
-  const theme = useThemeColors();
 
   const scaleFactor = width / 320;
   const responsiveFontSize = useCallback((size: number) => {
@@ -26,8 +23,6 @@ export const OnBoardingCon: SFC = () => {
 
   const onboard = useCallback(async () => {
     try {
-      // Seen once is enough; next launch goes straight to Home or Sign In.
-      await setItem(ONBOARDING_SEEN_KEY, 'true');
       if (auth?.accessToken) {
         router.replace(RoutesChannel.HOME);
       } else {
@@ -69,8 +64,8 @@ export const OnBoardingCon: SFC = () => {
           />
         </View>
         <View style={[styles.titleContainer, { paddingBottom }]}>
-          <S.Text className="text-3xl font-pbold text-blue-700 dark:text-blue-300 text-center">{item.Title}</S.Text>
-          <S.Text className="text-sm font-pregular text-gray-600 dark:text-slate-300 text-center px-8 mt-2 leading-5">{item.Description}</S.Text>
+          <S.Text className="text-3xl font-pbold text-blue-700 text-center">{item.Title}</S.Text>
+          <S.Text className="text-sm font-pregular text-gray-600 text-center px-8 mt-2 leading-5">{item.Description}</S.Text>
         </View>
       </View>
     );
@@ -119,19 +114,8 @@ export const OnBoardingCon: SFC = () => {
   };
 
   return (
-    <S.View style={[styles.container, { backgroundColor: theme.surface }]}>
-      {!isLastSlide && (
-        <S.TouchableOpacity
-          onPress={handleStart}
-          style={[styles.skipButton, { top: responsiveFontSize(16), right: 20 }]}
-          accessibilityRole="button"
-          accessibilityLabel="Skip introduction"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <S.Text style={[styles.skipText, { color: theme.mutedText }]}>Skip</S.Text>
-        </S.TouchableOpacity>
-      )}
-      <View style={[styles.top, { paddingTop: responsiveFontSize(80), backgroundColor: theme.surface }]}>
+    <S.View style={styles.container}>
+      <View style={[styles.top, { paddingTop: responsiveFontSize(80) }]}>
         <Animated.FlatList
           ref={flatListRef}
           data={slides}
@@ -155,7 +139,7 @@ export const OnBoardingCon: SFC = () => {
         />
       </View>
 
-      <View style={[styles.bottom, { marginBottom: responsiveFontSize(13), backgroundColor: theme.surface }]}>
+      <View style={[styles.bottom, { marginBottom: responsiveFontSize(13) }]}>
         {!isLastSlide ? (
           <Paginator />
         ) : (

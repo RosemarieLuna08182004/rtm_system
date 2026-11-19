@@ -1,14 +1,10 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-    readonly VITE_API_VERSION: string;
+    /** Backend origin, e.g. https://rtm-aiven-backend.onrender.com (see src/shared/routes/base.ts) */
     readonly VITE_API_URL?: string;
-    readonly VITE_API_SERVER: string;
-    readonly VITE_API_PORT: string;
-    // add more variables here as needed
-  }
-  
-  interface ImportMeta {
+}
+
+interface ImportMeta {
     readonly env: ImportMetaEnv;
-  }
-  
+}

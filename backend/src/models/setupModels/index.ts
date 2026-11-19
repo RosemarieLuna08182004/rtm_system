@@ -5,5 +5,7 @@ import TermLineModel from "./termLineModels";
 import TermModel from "./termModels";
 import UserModel from "./userModels";
 import UserLineModel from "./userLineModels";
+import NotificationModel from "./notificationModels";
+import { DuplicateAlerts } from "./notificationModels/duplicateAlerts";
 
-export { CategoryModel, ChapterModel, ProductModel, TermLineModel, TermModel, UserModel, UserLineModel }
+export { CategoryModel, ChapterModel, ProductModel, TermLineModel, TermModel, UserModel, UserLineModel, NotificationModel, DuplicateAlerts };

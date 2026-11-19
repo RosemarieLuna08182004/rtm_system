@@ -5,7 +5,7 @@ export const defaultRecord = {
     sales: [0],
     term: [0],
     termline: [0],
-    user: [1,2,3], // admin, dev, testers/encoders
+    user: [1,2,3], // protected from deletion
     userline: [1,2,3],
     userterms: [0]
 }

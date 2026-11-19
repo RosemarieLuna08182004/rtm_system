@@ -3,8 +3,8 @@ import _ from 'lodash';
 
 export const accountTypeOpt = [
     {value:Roles.default, label:'Select Account Type'},
-    {value:Roles.encoder, label:Roles.encoder},
-    {value:Roles.admin, label:Roles.admin},
+    // The backend only creates normal users; administrator accounts can't be added from here
+    {value:Roles.user, label:Roles.user},
     //{value:Roles.moderator, label:Roles.moderator}
 ]
 

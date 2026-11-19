@@ -3,26 +3,29 @@ import express from "express";
 import "./config/logging";
 import "reflect-metadata";
 import helmet from "helmet";
+import passport from "passport";
+import session from "express-session";
+import "./models/authModels";
 import cors from "cors";
 
 import { corsHandler, loggingHandler, route404 } from "./middleware";
-import { server, testConnection } from "./config";
+import { NODE_ENV, server, SESSION_SECRET, testConnection } from "./config";
 import { defineRoutes } from "./modules/routes";
 import {
   CategoryController,
   ChapterController,
   MainController,
   ProductController,
-  SalesController,
   TermController,
   TermLineController,
   UserController,
   UserLineController,
   UserTermController,
   AuthController,
-  GooglePayController
+  OAuthController,
 } from "./controllers";
 import StorageController from "./controllers/storageController";
+import NotificationController from "./controllers/setupControllers/notificationController";
 
 export const app = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -31,12 +34,26 @@ export const Main = async () => {
   logging.log("----------------------------------------");
   logging.log("Initializing API");
   logging.log("----------------------------------------");
-  // Behind Render's proxy: use the real client IP for rate limiting.
-  app.set("trust proxy", 1);
+  // In production the app sits behind one proxy (Render): use the visitor's real
+  // address, so the login limit counts per visitor rather than for everyone at once
+  if (NODE_ENV === "production") app.set("trust proxy", 1);
   app.use(helmet());
   app.use(corsHandler);
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  // Spreadsheet imports send up to 1,000 rows, more than the default 100 KB allows
+  app.use(express.json({ limit: "2mb" }));
+
+  app.use(
+    session({
+      secret: SESSION_SECRET,
+      
+      resave: false,
+      saveUninitialized: true,
+    }),
+  );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   logging.log("----------------------------------------");
   logging.log("Connect to Mysql");
@@ -55,23 +72,23 @@ export const Main = async () => {
     [
       MainController,
       AuthController,
+      OAuthController,
       UserController,
       CategoryController,
       ChapterController,
       ProductController,
       TermController,
-      SalesController,
       TermLineController,
       UserLineController,
       UserTermController,
-      GooglePayController,
       StorageController,
+      NotificationController,
     ],
     app,
   );
 
   logging.log("----------------------------------------");
-  logging.log("Registering the 404 (route not found) handler");
+  logging.log("Define Routing Error");
   logging.log("----------------------------------------");
   app.use(route404);
 

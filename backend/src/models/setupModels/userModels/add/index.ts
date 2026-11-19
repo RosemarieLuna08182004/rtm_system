@@ -13,8 +13,6 @@ export const addModel = async (Data: UserTable = UserInitial): Promise<ModelResp
     if (!(await AddService.record(DBTable.t007, Fields, Types, Values))) return { data: false, message: Error.m003 };
     return { data: true, message: Success.m002 }
   } catch (error: any) {
-    // A unique key (email, bookmark, unlock) rejected the row.
-    if (error?.code === "ER_DUP_ENTRY") return { data: false, message: Error.m016 };
     logging.log("----------------------------------------");
     logging.error("UserTable-Model [addModel]:", error.message);
     logging.log("----------------------------------------");

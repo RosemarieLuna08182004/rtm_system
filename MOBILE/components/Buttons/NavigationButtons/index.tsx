@@ -9,13 +9,13 @@ export const NavigationButton: SFC<NavigationButtonProps> = ({
   title,
   onPress,
   tintColor,
-  iconColor = 'text-blue-600 dark:text-blue-400',
-  textColor = 'text-gray-700 dark:text-slate-200',
+  iconColor = 'text-blue-600',
+  textColor = 'text-gray-700',
 }) => {
   return (
     <>
     <S.View className={ClassName}> 
-      <S.TouchableOpacity onPress={onPress} className={'flex-row items-center p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700'} >
+      <S.TouchableOpacity onPress={onPress} className={'flex-row items-center p-3 bg-white border border-slate-100'} >
           <S.View className='flex flex-row justify-between items-center w-full'>
             <S.View className='flex flex-row items-center justify-center'>
               <S.Image source={icon} className={`w-6 h-6 mr-4 ${iconColor}`} style={{ tintColor: tintColor }} />

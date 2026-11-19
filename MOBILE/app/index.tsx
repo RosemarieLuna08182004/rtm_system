@@ -1,47 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, OnBoardingCon } from '@/components';
-import { ONBOARDING_SEEN_KEY, RoutesChannel } from '@/constants';
+import { useRouter } from 'expo-router';
+import { ActivityIndicator, IsConnectedCard, OnBoardingCon } from '@/components';
+import { RoutesChannel } from '@/constants';
 import { useAuth } from '@/hooks/useAuth';
-import { getItem } from '@/utils/asyncStorage';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useSignOut } from '@/hooks/useSignOut';
 import * as S from '@/styles';
-import { StatusBar } from 'expo-status-bar';
-import { usePreferences } from '@/context';
+import { isTokenExpired } from '@/context/AuthProvider';
+import { Alert } from 'react-native';
+import { Error, ErrorTitle } from '@/shared';
 
-// Start screen. The onboarding slides show once; after that people go straight to
-// Home (signed in) or Sign In. "About the Author" / "‹ Onboarding" open the slides on purpose.
 export default function App() {
   const router = useRouter()
-  const { auth, initialized } = useAuth();
-  const { isDark } = usePreferences();
-  const { showOnboarding } = useLocalSearchParams<{ showOnboarding?: string }>();
-  const [showSlides, setShowSlides] = useState(false);
+  const { auth } = useAuth();
+  const isConnected = useNetworkStatus(); 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {signOut}= useSignOut()
 
-  useEffect(() => {
-    if (!initialized) return;
-    if (showOnboarding === 'true') {
-      setShowSlides(true);
-      return;
-    }
-    if (auth?.accessToken) {
-      router.replace(RoutesChannel.HOME);
-      return;
-    }
-    let active = true;
-    getItem(ONBOARDING_SEEN_KEY).then((seen) => {
-      if (!active) return;
-      if (seen) router.replace(RoutesChannel.SIGN_IN);
-      else setShowSlides(true);
-    });
-    return () => { active = false; };
-  }, [initialized, auth?.accessToken, showOnboarding, router]);
+  useEffect(() => { 
+    const checkAuthAndOnboarding = async () => {
+      try {
+        // We no longer check hasOnboarded here to make it persistent every time the app opens
+        setIsLoading(false);
+      } catch (error) {
+        Alert.alert(ErrorTitle.m0001, Error.m0001);
+        router.replace(RoutesChannel.SIGN_IN);
+      } finally {
+        if (isLoading) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  if (!showSlides) return <ActivityIndicator/>;
+    const timer = setTimeout(() => {
+      checkAuthAndOnboarding();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [auth]);
+
+  if (isLoading) return <ActivityIndicator/>;
+  
+  if (!isConnected) return <IsConnectedCard />;
 
   return (
-    <S.SafeAreaView className="flex-1 bg-white dark:bg-slate-900">
-      {/* The slides are white in light mode, so the status bar icons go dark there. */}
-      <StatusBar style={isDark ? "light" : "dark"} />
+    <S.SafeAreaView className="flex-1 bg-white">
       <OnBoardingCon/>
     </S.SafeAreaView>
   );

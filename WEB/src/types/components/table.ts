@@ -16,6 +16,8 @@ export interface EnhancedTableProps<T extends Record<string, any>> {
     IsEdit?: boolean
     OnRecordDelete: () => void;
     Title?:string
+    /** Short italic line under the title saying what the list is for */
+    Description?: string
     RemoveTable?: DBTable
     IsRemove?:boolean
     IsLoading?:boolean

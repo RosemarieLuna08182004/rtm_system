@@ -1,31 +1,32 @@
 import Joi from "joi";
 import { Roles } from "../../types";
+import { COUNTRY_CODES } from "../../shared/data/countries";
 
-// Latin letters incl. accented ones (ñ, é, ü...), spaces, periods, hyphens, apostrophes.
-// Keep in sync with MOBILE/validators/signUp.ts.
-const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ſ\s.'-]+$/;
+// Two-letter code from the Google Play locations list (shared/data/countries.ts)
+const country = Joi.string().valid(...COUNTRY_CODES).messages({
+  "any.only": "Please choose a country from the list.",
+  "any.required": "Please choose your country.",
+});
 
 export const userValidatorOnCreate = Joi.object({
-  // Ignored (forced to "user") unless the request comes from an administrator.
-  AccountType: Joi.string().valid(...Object.values(Roles)).optional(),
+  AccountType: Joi.string().valid(...Object.values(Roles)).required(),
   GoogleId: Joi.string().allow(null).optional(),
-  Name: Joi.string().trim().pattern(NAME_PATTERN).required(),
+  Name: Joi.string().pattern(/^[a-zA-Z\s]+$/).required(), 
   Email: Joi.string().email().required(),
   Password: Joi.string().min(8).required(),
+  Country: country.required(),
   ProfilePhoto: Joi.string().allow(null).optional(),
-  // Sent as null by the web admin form; provider tokens are no longer stored.
-  AccessToken: Joi.valid(null).optional(),
+  AccessToken: Joi.string().allow(null).optional(),
   DateCreated: Joi.date().iso().optional(),
 });
 
 export const userValidatorOnUpdate = Joi.object({
   GoogleId: Joi.string().allow(null).optional(),
-  Name: Joi.string().trim().pattern(NAME_PATTERN).optional(),
+  Name: Joi.string().optional(), // Only letters, no special characters or numbers
   Email: Joi.string().email().optional(),
   Password: Joi.string().min(8).optional(),
-  CurrentPassword: Joi.string().optional(),
+  Country: country.optional(),
   ProfilePhoto: Joi.string().allow(null).optional(),
-  // Sent as null by the web admin form; provider tokens are no longer stored.
-  AccessToken: Joi.valid(null).optional(),
+  AccessToken: Joi.string().allow(null).optional(),
   DateUpdated: Joi.date().iso().optional(),
 });

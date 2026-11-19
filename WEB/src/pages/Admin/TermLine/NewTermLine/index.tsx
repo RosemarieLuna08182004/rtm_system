@@ -21,7 +21,7 @@ export const AdminNewTermLinePage : SFC = ({ClassName}) => {
                 </S.Actions >
             </S.PageTopBar>
             <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
-                <SubTermForm Title="New Sub Term" IsEdit={false}/>
+                <SubTermForm Title="New Sub Term" Description="Add a piece of content, such as a root or brief definition, under a term." IsEdit={false}/>
             </S.Content> 
         </S.Container> 
         </>

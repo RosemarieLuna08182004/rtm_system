@@ -1,1 +1,1 @@
-export * from './useGetMyBookmarks'
+export * from './useGetAllBookmark'

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react"
 import * as S from '@/styles'
-import { SignUpForm } from "@/components"
+import { SignUpForm, TouchableButton } from "@/components"
 import { useRouter } from "expo-router"
 import { RoutesChannel } from "@/constants"
 import AuthRedirect from "@/context/AuthRedirect"
-import { Keyboard } from "react-native"
+import { Image, Platform, Keyboard } from "react-native"
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { BackIcon } from "@/constants/icons"
 
 export default function SignUp() {
     const router = useRouter()
@@ -33,7 +34,7 @@ export default function SignUp() {
 
     return (
         <AuthRedirect>
-            <S.SafeAreaView className="flex-1 bg-white dark:bg-slate-900">
+            <S.SafeAreaView className="flex-1 bg-white">
               <KeyboardAwareScrollView
                 className="flex-1"
                 contentContainerStyle={{ flexGrow: 1 }}
@@ -47,8 +48,8 @@ export default function SignUp() {
               >
                 <S.View className="flex-1 justify-center px-6 py-8">
                   <S.View className="mb-10">
-                    <S.Text className="text-3xl font-pbold text-blue-700 dark:text-blue-300 mb-1">Create Account</S.Text>
-                    <S.Text className="text-gray-500 dark:text-slate-400 font-pregular">Start learning Anatomy and Physiology today</S.Text>
+                    <S.Text className="text-3xl font-pbold text-blue-700 mb-1">Create Account</S.Text>
+                    <S.Text className="text-gray-500 font-pregular">Start learning Anatomy and Physiology today</S.Text>
                   </S.View>
 
                   <S.View className="space-y-5">
@@ -63,21 +64,21 @@ export default function SignUp() {
         className="flex-row items-center"
         onPress={()=>router.push(`${RoutesChannel.INDEX}?showOnboarding=true`)}
       >
-        <S.Text className="text-gray-500 dark:text-slate-400 font-pregular text-lg mr-2">
+        <S.Text className="text-gray-500 font-pregular text-lg mr-2">
           &lt;
         </S.Text>
-        <S.Text className="text-gray-500 dark:text-slate-400 font-pregular">
+        <S.Text className="text-gray-500 font-pregular">
           Onboarding
         </S.Text>
       </S.TouchableOpacity>
     </S.View>
   )}
 
-              <S.View className="py-6 border-t border-gray-100 dark:border-slate-700">
-                <S.Text className="text-center text-gray-600 dark:text-slate-300 font-pregular">
+              <S.View className="py-6 border-t border-gray-100">
+                <S.Text className="text-center text-gray-600 font-pregular">
                   Already have an account?{' '}
                   <S.Text 
-                    className="text-blue-700 dark:text-blue-300 font-pbold" 
+                    className="text-blue-700 font-pbold" 
                     onPress={()=>router.push(RoutesChannel.SIGN_IN)}
                   >
                     Sign in

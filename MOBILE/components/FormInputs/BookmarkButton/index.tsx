@@ -1,132 +1,134 @@
-import React, { memo, useCallback, useMemo, useRef, useState, useEffect } from "react";
+import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import { BookmarkButtonProps, SFC, TermStatus } from "@/types";
 import * as S from "../../../styles";
-import { useAuth } from "@/hooks";
-import { BookmarkIcon, BookmarkOutlineIcon } from "@/constants";
-import { bookmarkApi } from "@/services/api";
+import { useAuth, useToggle } from "@/hooks";
+import { API, BookmarkIcon, BookmarkOutlineIcon } from "@/constants";
 import { renderStatus } from "@/utils";
 import { Alert, GestureResponderEvent, ActivityIndicator } from "react-native";
-import { ErrorTitle } from "@/shared";
+import { useAxiosPrivate } from "@/hooks/useAxiosPrivate";
+import { ErrorTitle, Error } from "@/shared";
 import { useBookmarkContext } from "@/context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { errorMessageFrom } from "@/utils/errors";
 
 export const BookmarkButton: SFC<BookmarkButtonProps> = memo(
-  ({
-    ClassName,
-    Status = TermStatus.lock,
+  ({ 
+    ClassName, 
+    Status = TermStatus.lock, 
     Disabled = false,
-    UserTermsId = 0,
-    TermId = 0,
+    UserTermsId = 0, 
+    TermId = 0, 
+    OnPress, 
     OnUnbookmark,
     IsChapter = false,
-    NoLoading = false,
-    Variant = 'default'
+    NoLoading = false
   }) => {
     const status = renderStatus(Status, IsChapter);
+    const axios = useAxiosPrivate();
     const { auth } = useAuth();
     const UserId = useMemo(()=>auth?.user?.Id ?? 0,[auth]);
     const { updateBookmarkStatus, incrementBookmarkVersion } = useBookmarkContext();
-
-    // Local copy of the server state. The row Id is kept after the first bookmark so
-    // later taps toggle the same row instead of creating a new one.
-    const [isBookmark, setIsBookmark] = useState<boolean>(Status === TermStatus.bookmark);
-    const [userTermsId, setUserTermsId] = useState<number>(UserTermsId);
+    
+    // Initialize bookmark state directly from Status prop (already from API)
+    const initialBookmarkState = useMemo(() => {
+      return Status === TermStatus.bookmark;
+    }, [Status]);
+    
+    const [isBookmark, toggleBookmark] = useToggle(initialBookmarkState);
     const [isLoading, setIsLoading] = useState(false);
-    const pendingRef = useRef(false);
     const BookmarkIcons = isBookmark ? BookmarkIcon : BookmarkOutlineIcon;
 
-    // Sync when fresh data arrives from the API.
-    useEffect(() => { setIsBookmark(Status === TermStatus.bookmark); }, [Status]);
-    useEffect(() => { if (UserTermsId) setUserTermsId(UserTermsId); }, [UserTermsId]);
-
-    const saveBookmark = useCallback(async (bookmarked: boolean): Promise<void> => {
-      if (userTermsId) {
-        await bookmarkApi.setStatus(userTermsId, bookmarked);
-        return;
+    // Update bookmark state when Status prop changes (from API or refresh)
+    useEffect(() => {
+      const newState = Status === TermStatus.bookmark;
+      if (newState !== isBookmark) {
+        toggleBookmark();
       }
-      // No row yet: create (or reuse) it, then apply the requested state.
-      const newId = await bookmarkApi.bookmark(TermId, UserId);
-      if (newId) setUserTermsId(newId);
-      if (!bookmarked && newId) await bookmarkApi.setStatus(newId, false);
-    }, [userTermsId, TermId, UserId]);
+    }, [Status]);
 
     const handleBookmarkToggle = useCallback(
       async (event: GestureResponderEvent) => {
         event.stopPropagation?.();
-        if (pendingRef.current || !TermId || !UserId) return;
-        pendingRef.current = true;
+        
+        
+        if (isLoading && !NoLoading) return; // Prevent multiple simultaneous requests only if loading is shown
+        
+        if (!NoLoading) {
+          setIsLoading(true);
+        }
 
-        const next = !isBookmark;
-        setIsBookmark(next); // optimistic
-        if (!NoLoading) setIsLoading(true);
+        // If we have a custom OnUnbookmark handler and we're unbookmarking, use it
+        if (OnUnbookmark && isBookmark) {
+          // Immediately remove from UI - no loading, no waiting
+          OnUnbookmark();
+          
+          // Process API call silently in background without loading states
+          (async () => {
+            try {
+              if (UserTermsId && UserTermsId !== 0) {
+                await axios.delete(`${API}/user/term/remove/${UserTermsId}`);
+              }
+              // Update global context after successful API call
+              if (TermId && UserId) {
+                updateBookmarkStatus(TermId, UserId, false);
+                incrementBookmarkVersion('remove');
+              }
+            } catch (error: any) {
+              // On error, show alert but don't revert UI since item is already removed
+              const errorMessage = error.response?.data?.message || Error.m0001;
+              Alert.alert(ErrorTitle.m0001, errorMessage);
+            }
+          })();
+          
+          if (!NoLoading) {
+            setIsLoading(false);
+          }
+          return;
+        }
+        
+        toggleBookmark(); // Optimistic update for regular bookmark/unbookmark
+        
+        // Update global context immediately for optimistic update
+        if (TermId && UserId) {
+          updateBookmarkStatus(TermId, UserId, !isBookmark);
+          incrementBookmarkVersion(!isBookmark ? 'add' : 'remove'); // Notify all components of the change
+        }
+
         try {
-          await saveBookmark(next);
-          updateBookmarkStatus(TermId, UserId, next);
-          incrementBookmarkVersion(next ? 'add' : 'remove');
-          if (!next) OnUnbookmark?.();
+          if (!UserTermsId && TermId) {
+            await axios.post(`${API}/user/term/bookmark/${TermId}/${UserId}`);
+          } else if (UserTermsId && UserTermsId !== 0) {
+            const statusPayload = isBookmark ? { Status: 0 } : { Status: 1 };
+            await axios.patch(`${API}/user/term/unbookmark/${UserTermsId}`, statusPayload);
+          }
+          // Success - no need to call OnPress (refetch) anymore
         } catch (error: any) {
-          setIsBookmark(!next); // revert to the server state
-          Alert.alert(ErrorTitle.m0001, errorMessageFrom(error));
+          // Handle "Record already exists" error - treat as success
+          if (error?.response?.data?.message === "Record already exists") {
+            // Don't revert the optimistic update, keep the bookmark state
+            return;
+          }
+          
+          toggleBookmark(); // Revert the optimistic update on error
+          // Revert global context on error
+          if (TermId && UserId) {
+            updateBookmarkStatus(TermId, UserId, isBookmark);
+          }
+          Alert.alert(ErrorTitle.m0001, Error.m0001);
         } finally {
-          pendingRef.current = false;
-          if (!NoLoading) setIsLoading(false);
+          if (!NoLoading) {
+            setIsLoading(false);
+          }
         }
       },
-      [isBookmark, TermId, UserId, NoLoading, saveBookmark, updateBookmarkStatus, incrementBookmarkVersion, OnUnbookmark]
+      [UserId, UserTermsId, TermId, isBookmark, axios, toggleBookmark, isLoading, OnUnbookmark, NoLoading, updateBookmarkStatus]
     );
 
-    const canToggle = Status === TermStatus.bookmark || Status === TermStatus.unbookmark;
-
-    // Plain white bookmark in the term screen header.
-    if (Variant === 'header') {
-      if (!canToggle) return null;
-      return (
-        <S.TouchableOpacity
-          className={`h-12 w-12 items-center justify-center ${ClassName ?? ''}`}
-          onPress={handleBookmarkToggle}
-          disabled={Disabled || isLoading}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel={isBookmark ? "Remove bookmark" : "Bookmark this term"}
-          accessibilityState={{ selected: isBookmark, busy: isLoading }}
-        >
-          <MaterialCommunityIcons name={isBookmark ? 'bookmark' : 'bookmark-outline'} size={32} color="#ffffff" />
-        </S.TouchableOpacity>
-      );
-    }
-
-    // Square white-on-blue button used on the Terms screen rows.
-    if (Variant === 'tile') {
-      return (
-        <S.TouchableOpacity
-          className={`h-11 w-11 rounded-xl items-center justify-center bg-white/20 border border-white/25 ${ClassName ?? ''}`}
-          onPress={handleBookmarkToggle}
-          disabled={!canToggle || Disabled || isLoading}
-          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          accessibilityRole="button"
-          accessibilityLabel={canToggle ? (isBookmark ? "Remove bookmark" : "Bookmark this term") : "Locked"}
-          accessibilityState={{ selected: isBookmark, busy: isLoading, disabled: !canToggle }}
-        >
-          {isLoading && !NoLoading ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <MaterialCommunityIcons name={!canToggle ? 'lock-outline' : isBookmark ? 'bookmark' : 'bookmark-outline'} size={22} color="#ffffff" />
-          )}
-        </S.TouchableOpacity>
-      );
-    }
-
     // Conditional rendering for bookmarked/unlocked state
-    if (canToggle) {
+    if (Status === TermStatus.bookmark || Status === TermStatus.unbookmark) {
       return (
         <S.TouchableOpacity
           className={`w-3/12 flex justify-center items-end h-12 pr-3 ${ClassName}`}
           onPress={handleBookmarkToggle}
           disabled={Disabled || isLoading}
-          accessibilityRole="button"
-          accessibilityLabel={isBookmark ? "Remove bookmark" : "Bookmark this term"}
-          accessibilityState={{ selected: isBookmark, busy: isLoading }}
         >
           <S.View className="flex flex-row justify-end items-center">
             {isLoading && !NoLoading ? (
@@ -142,7 +144,7 @@ export const BookmarkButton: SFC<BookmarkButtonProps> = memo(
         </S.TouchableOpacity>
       );
     }
-
+    
     return (
       <S.View
         className={`flex flex-row justify-end items-center h-12 w-3/12 pr-3 ${ClassName}`}
@@ -156,3 +158,4 @@ export const BookmarkButton: SFC<BookmarkButtonProps> = memo(
     );
   }
 );
+

@@ -1,80 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { forgotPasswordValidator, loginValidator, resetPasswordValidator } from "../../../validators";
+import { changePasswordValidator, loginValidator } from "../../../validators";
 import { API } from "../../../constants";
-import { TokenHandler, authLimiter } from "../../../middleware";
+import { TokenHandler, loginLimiter } from "../../../middleware";
 import { LoginRequest, ModelResponse } from "../../../types";
-import { Success, Error, UserQuery } from "../../../shared";
-import {
-  GenerateFn,
-  getByEmail,
-  GOOGLE_PLACEHOLDER_PASSWORD,
-  toSafeUser,
-  createResetChallenge,
-  createDecoyResetToken,
-  readResetToken,
-  isResetCodeValid,
-} from "../../../functions";
-import { UserModel } from "../../../models";
-import { isMailConfigured, sendMail } from "../../../services/mail/mailService";
-import { GetService } from "../../../services";
-import { compare } from "bcrypt";
-import jwt from "jsonwebtoken";
-import { NODE_ENV, SECRET_KEY, SECRET_REFRESH_KEY } from "../../../config";
-
-// Resolves the user Id for a refresh request, or 0 when no valid credential is given.
-export const getRefreshUserId = (req: LoginRequest): number => {
-  const refreshToken = req.body?.refreshToken || req.headers["refresh-token"];
-  if (refreshToken) {
-    try {
-      const payload: any = jwt.verify(String(refreshToken), SECRET_REFRESH_KEY);
-      return Number(payload?.UserId) || 0;
-    } catch {
-      return 0;
-    }
-  }
-  const header = req.headers["authorization"];
-  if (header?.startsWith("Bearer ")) {
-    try {
-      const payload: any = jwt.verify(header.split(" ")[1], SECRET_KEY);
-      if (payload?.type === "refresh") return 0;
-      return Number(payload?.Id) || 0;
-    } catch {
-      return 0;
-    }
-  }
-  return 0;
-};
-
-const refreshSession = async (req: LoginRequest, res: Response): Promise<Response> => {
-  try {
-    const userId = getRefreshUserId(req);
-    if (!userId) return res.status(401).json({ data: false, message: Error.m025 });
-    // The account must still exist.
-    const [account] = await GetService.byFields(UserQuery.q002, ["Id"], [Number], [userId]);
-    if (!account) return res.status(401).json({ data: false, message: Error.m025 });
-    const accessToken: ModelResponse = await GenerateFn.accessToken(userId);
-    const refreshToken: ModelResponse = await GenerateFn.refreshToken(userId);
-    if (!accessToken.data || !refreshToken.data)
-      return res.status(500).json({ data: false, message: Error.m003 });
-    res.setHeader("Authorization", `Bearer ${accessToken.data}`);
-    res.setHeader("Refresh-Token", refreshToken.data);
-    return res.status(200).json({
-      data: {
-        user: userId,
-        roles: account.AccountType,
-        accessToken: accessToken.data,
-        refreshToken: refreshToken.data,
-      },
-      message: Success.m001,
-    });
-  } catch (error: any) {
-    logging.log("----------------------------------------");
-    logging.error("JWTAuth-Controller [refresh]:", error.message);
-    logging.log("----------------------------------------");
-    return res.status(500).json({ data: false, message: Error.m001 });
-  }
-};
+import { Success, Error, UserQuery, DBTable } from "../../../shared";
+import { GenerateFn, getByEmail, readSession, withoutSecrets } from "../../../functions";
+import { GetService, UpdateService } from "../../../services";
+import { compare, hash } from "bcrypt";
 
 @Controller(`${API}/auth`)
 export default class AuthController {
@@ -97,29 +30,48 @@ export default class AuthController {
     }
   }
 
-  // Issues a new access token and a rotated refresh token.
-  // Preferred: send the refresh token (body `refreshToken` or `Refresh-Token` header);
-  // it is accepted even after the access token has expired.
-  // Legacy (older app builds): a still-valid access token in `Authorization`.
-  @Route("get", "/refresh", authLimiter)
+  // No verifyToken here: the access token is usually expired by the time the app refreshes.
+  // readSession checks the refresh token (web) or the expired access token (mobile app)
+  // and stops refreshes SESSION_MAX_DAYS after the original login.
+  @Route("get", "/refresh")
   async refresh(
     req: LoginRequest,
     res: Response,
     next: NextFunction,
   ): Promise<Response> {
-    return refreshSession(req, res);
+    try {
+      const authorization = req.headers["authorization"];
+      const bearer = authorization?.startsWith("Bearer ") ? authorization.slice(7) : undefined;
+      const session = readSession(req.headers["refresh-token"] as string | undefined, bearer);
+      if (!session.claims)
+        return res.status(401).json({ data: false, message: session.reason === "expired" ? Error.m038 : Error.m004 });
+      const [account] = await GetService.byFields(UserQuery.q0014, ["Id"], [Number], [session.claims.UserId]);
+      if (!account) return res.status(401).json({ data: false, message: Error.m018 });
+      const user: number = Number(account.Id);
+      const accessToken: ModelResponse = await GenerateFn.accessToken(user, session.claims.LoginAt);
+      const refreshToken: ModelResponse = await GenerateFn.refreshToken(user, session.claims.LoginAt);
+      if (!accessToken.data || !refreshToken.data)
+        return res.status(404).json({ data: false, message: Error.m004 });
+      res.setHeader("Authorization", `Bearer ${accessToken.data}`);
+      res.setHeader("Refresh-Token", refreshToken.data);
+      return res.status(200).json({
+        data: {
+          user: user,
+          roles: account.AccountType, // the web admin keeps its role check after a refresh
+          accessToken: accessToken.data,
+          refreshToken: refreshToken.data,
+        },
+        message: Success.m001,
+      });
+    } catch (error: any) {
+      logging.log("----------------------------------------");
+      logging.error("JWTAuth-Controller [refresh]:", error.message);
+      logging.log("----------------------------------------");
+      return res.status(500).json({ data: false, message: Error.m001 });
+    }
   }
 
-  @Route("post", "/refresh", authLimiter)
-  async refreshPost(
-    req: LoginRequest,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response> {
-    return refreshSession(req, res);
-  }
-
-  @Route("post", "/login", authLimiter)
+  @Route("post", "/login", loginLimiter)
   @Validate(loginValidator)
   async login(
     req: Request,
@@ -128,14 +80,10 @@ export default class AuthController {
   ): Promise<Response> {
     try {
       const data = req.body;
-      const user = await getByEmail(String(data?.Email ?? "").trim());
-      // Same response for unknown email and wrong password, so accounts can't be probed.
-      // The Google placeholder password is never a valid login.
-      if (
-        !user.data ||
-        data.Password === GOOGLE_PLACEHOLDER_PASSWORD ||
-        !(await compare(data.Password, user.data.Password))
-      )
+      const user = await getByEmail(data?.Email ?? "");
+      if (!user.data)
+        return res.status(401).json({ data: false, message: Error.m011 });
+      if (!(await compare(data.Password, user.data.Password)))
         return res.status(401).json({ data: false, message: Error.m019 });
       const accessToken: ModelResponse = await GenerateFn.accessToken(
         parseInt(user.data.Id, 10),
@@ -150,7 +98,7 @@ export default class AuthController {
       return res.status(200).json({
         data: {
           success: true,
-          user: toSafeUser(user.data),
+          user: withoutSecrets(user.data),
           accessToken: accessToken.data,
           refreshToken: refreshToken.data,
         },
@@ -164,27 +112,23 @@ export default class AuthController {
     }
   }
 
-  @Route("post", "/verify-password", authLimiter, TokenHandler.verifyToken)
+  @Route("post", "/verify-password", TokenHandler.verifyToken, loginLimiter)
   async verifyPassword(
     req: LoginRequest,
     res: Response,
     next: NextFunction,
   ): Promise<Response> {
     try {
-      const data = req.body;
-      // Always checks the caller's own account; any Email in the body is ignored.
-      const [account] = await GetService.byFields(
-        UserQuery.q002,
-        ["Id"],
-        [Number],
-        [Number(req.User?.Id ?? 0)],
-      );
-      if (!account)
-        return res.status(401).json({ data: false, message: Error.m024 });
-      if (
-        data.Password === GOOGLE_PLACEHOLDER_PASSWORD ||
-        !(await compare(String(data.Password ?? ""), account.Password))
-      )
+      // Checks the signed-in account's own password. Any Email in the body is ignored,
+      // so this can't be used to test passwords against other people's accounts.
+      const Password = typeof req.body?.Password === "string" ? req.body.Password : "";
+      const caller = req.User as { Id?: number | string; email?: string } | undefined;
+      const [found] = caller?.Id
+        ? await GetService.byFields(UserQuery.q0014, ["Id"], [Number], [caller.Id])
+        : await GetService.byFields(UserQuery.q0015, ["Email"], [String], [caller?.email ?? ""]);
+      if (!found) return res.status(401).json({ data: false, message: Error.m018 });
+      const [account] = await GetService.byFields(UserQuery.q002, ["Id"], [Number], [found.Id]);
+      if (!Password || !account?.Password || !(await compare(Password, account.Password)))
         return res.status(401).json({ data: false, message: Error.m024 });
       return res.status(200).json({ data: true, message: Success.m001 });
     } catch (error: any) {
@@ -195,67 +139,30 @@ export default class AuthController {
     }
   }
 
-  // Step 1: always answers the same way, whether or not the email has an account.
-  // A 6-digit code is emailed; the app keeps the returned resetToken for step 2.
-  @Route("post", "/forgot-password", authLimiter)
-  @Validate(forgotPasswordValidator)
-  async forgotPassword(
-    req: Request,
+  // Change your own password. The account comes from the login, never the request body,
+  // and the current password must be right, so a stolen login alone can't change it.
+  @Route("post", "/change-password", TokenHandler.verifyToken, loginLimiter)
+  @Validate(changePasswordValidator)
+  async changePassword(
+    req: LoginRequest,
     res: Response,
     next: NextFunction,
   ): Promise<Response> {
     try {
-      if (!isMailConfigured() && NODE_ENV !== "development")
-        return res.status(503).json({ data: false, message: Error.m039 });
-      const user = await getByEmail(String(req.body.Email).trim().toLowerCase());
-      let resetToken = createDecoyResetToken();
-      if (user.data?.Id) {
-        const challenge = createResetChallenge(Number(user.data.Id), user.data.Password);
-        resetToken = challenge.token;
-        if (isMailConfigured()) {
-          // Not awaited: known and unknown emails must take the same time to answer.
-          sendMail(
-            user.data.Email,
-            "Roots & Morphology password reset code",
-            `Your password reset code is ${challenge.code}.\n\nIt expires in 15 minutes. If you did not ask to reset your password, you can ignore this email.`,
-          ).catch((error) => logging.error("Password reset email failed:", error.message));
-        } else {
-          // Local development only: no mail server configured.
-          logging.info("[dev] Password reset code:", challenge.code);
-        }
-      }
-      return res.status(200).json({ data: { resetToken }, message: Success.m009 });
+      const { CurrentPassword, NewPassword } = req.body;
+      const caller = req.User as { Id?: number | string; email?: string } | undefined;
+      const [found] = caller?.Id
+        ? await GetService.byFields(UserQuery.q0014, ["Id"], [Number], [caller.Id])
+        : await GetService.byFields(UserQuery.q0015, ["Email"], [String], [caller?.email ?? ""]);
+      if (!found) return res.status(401).json({ data: false, message: Error.m018 });
+      const [account] = await GetService.byFields(UserQuery.q002, ["Id"], [Number], [found.Id]);
+      if (!account?.Password || !(await compare(CurrentPassword, account.Password)))
+        return res.status(401).json({ data: false, message: Error.m024 });
+      await UpdateService.record(Number(found.Id), DBTable.t007, ["Password", "DateUpdated"], [String, Date], [await hash(NewPassword, 10), new Date()]);
+      return res.status(200).json({ data: true, message: Success.m004 });
     } catch (error: any) {
       logging.log("----------------------------------------");
-      logging.error("JWTAuth-Controller [forgot-password]:", error.message);
-      logging.log("----------------------------------------");
-      return res.status(503).json({ data: false, message: Error.m039 });
-    }
-  }
-
-  // Step 2: code + new password. The token stops working once the password changes.
-  @Route("post", "/reset-password", authLimiter)
-  @Validate(resetPasswordValidator)
-  async resetPassword(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response> {
-    try {
-      const { resetToken, Code, Password } = req.body;
-      const challenge = readResetToken(resetToken);
-      if (!challenge) return res.status(400).json({ data: false, message: Error.m040 });
-      const [account] = await GetService.byFields(UserQuery.q002, ["Id"], [Number], [challenge.userId]);
-      if (!account || !isResetCodeValid(challenge, Code, account.Password))
-        return res.status(400).json({ data: false, message: Error.m040 });
-      if (Password === GOOGLE_PLACEHOLDER_PASSWORD)
-        return res.status(400).json({ data: false, message: Error.m040 });
-      const response = await UserModel.update(challenge.userId, { Password } as any);
-      if (!response.data) return res.status(500).json({ data: false, message: Error.m003 });
-      return res.status(200).json({ data: true, message: Success.m010 });
-    } catch (error: any) {
-      logging.log("----------------------------------------");
-      logging.error("JWTAuth-Controller [reset-password]:", error.message);
+      logging.error("JWTAuth-Controller [change-password]:", error.message);
       logging.log("----------------------------------------");
       return res.status(500).json({ data: false, message: Error.m001 });
     }

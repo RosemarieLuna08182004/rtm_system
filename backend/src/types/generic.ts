@@ -23,6 +23,8 @@ export interface LoginRequest extends Request {
   User?: UserTable;
   AccessToken?: string;
   RefreshToken?: string;
+  /** Caller's account, set by TokenHandler.verifyAdmin / verifySelfOrAdmin */
+  CurrentUser?: Pick<UserTable, "Id" | "AccountType" | "Email">;
 }
 
 export interface ModelResponse {

@@ -2,7 +2,6 @@ import { Id, Logs } from "../";
 
 export enum Roles {
   admin = "administrator",
-  encoder = "encoder",
   moderator = "moderator",
   user = "user",
 }
@@ -12,10 +11,11 @@ export interface UserTable extends Id, Logs {
   GoogleId?: string | null;
   Name: string;
   Email: string;
+  /** Two-letter code (PH, US, ...); null for accounts made before it was asked */
+  Country?: string | null;
   Password: string;
   ProfilePhoto?: string | null;
   AccessToken?: string | null;
-  Coins?: number;
   IsBundle?: number;
   UserLineId?: number;
 }

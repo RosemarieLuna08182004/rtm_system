@@ -1,16 +1,19 @@
 import { ButtonType, categoryHC, DBTable, RouteChannel, SFC } from "../../../types";
 import * as S from '../../../styles/Styles'
-import { CustomButton, PageBreadCrumbs, EnhancedTable, Skeleton } from "../../../components";
+import { CustomButton, PageBreadCrumbs, EnhancedTable, Skeleton, AttentionFilterBanner } from "../../../components";
 import { useNavigate } from "react-router-dom";
 import AddIcon from '@mui/icons-material/Add';
 import { useGetAllCategory } from "../../../hooks/api/category";
+import { useAttentionFilter } from "../../../hooks";
 import { twMerge } from "tailwind-merge";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 
 export const AdminCategoryPage : SFC = ({ClassName}) => {
     const navigate = useNavigate()
     const links = [{ Text: 'Dashboard', OnClick: () => navigate(RouteChannel.DASHBOARD) }]
     const { records, refetch, loading } = useGetAllCategory()
+    const { filter, applyFilter, clearFilter } = useAttentionFilter()
+    const rows = useMemo(() => applyFilter(records), [records, applyFilter])
     return (
         <>
         <S.Container className={twMerge(" ", ClassName)}>
@@ -20,9 +23,10 @@ export const AdminCategoryPage : SFC = ({ClassName}) => {
                     <CustomButton  icon={<AddIcon className="md:text-white text-primary" />} onClick={()=>navigate(RouteChannel.NEW_CATEGORY)} text={'New'} type={ButtonType.button} />
                 </S.Actions >
             </S.PageTopBar>
+            {filter && !loading && <AttentionFilterBanner Filter={filter} Shown={rows.length} Noun="categories" OnClear={clearFilter} />}
             <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
                 <Suspense fallback={<Skeleton />}>
-                    <EnhancedTable  IsLoading={loading} Title="Categories" Rows={records} HeadCells={categoryHC} OnRecordDelete={()=>refetch()} RemoveTable={DBTable.CATEGORY}  ClassName="md:max-h-[calc(100vh-200px)]" />
+                    <EnhancedTable  IsLoading={loading} Title="Categories" Description="Labels that say what kind of content each sub term holds." Rows={rows} HeadCells={categoryHC} OnRecordDelete={()=>refetch()} RemoveTable={DBTable.CATEGORY}  ClassName="md:max-h-[calc(100vh-156px)]" />
                 </Suspense>
             </S.Content> 
         </S.Container> 

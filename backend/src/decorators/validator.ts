@@ -17,11 +17,9 @@ export const Validate = <T = any>(schema: Joi.ObjectSchema<T>) => {
       try {
         await schema.validateAsync(req.body);
       } catch (error: any) {
-        // Log only the rule that failed; the error object also carries the request body (passwords).
-        logging.error("Validation failed:", error?.details?.[0]?.message ?? error?.message);
+        logging.error(error);
 
-        const { message, path, type } = error.details?.[0] ?? {};
-        return res.status(400).json({ message, path, type });
+        return res.status(400).json(error.details[0]);
       }
 
       return originalMethod.call(this, req, res, next);

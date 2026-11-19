@@ -1,26 +1,32 @@
 import React, {
-memo,
-useCallback,
-useEffect,
-useMemo,
-useRef,
-useState
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
 } from "react";
 import {
-RefreshControl,
-Animated,
-View
+  RefreshControl,
+  Animated,
+  View,
+  ListRenderItem
 } from "react-native";
-import { FlashList, FlashListProps, FlashListRef } from "@shopify/flash-list";
+import { FlashList, FlashListProps } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import {
-AnimatedSearch,
-ModalComponent,
-SkeletonButton
+  ActivityIndicator,
+  AnimatedSearch,
+  ModalComponent,
+  SkeletonButton
 } from "@/components";
-import { useSearch } from "@/hooks";
+import { useAuth, useSearch } from "@/hooks";
+import { useAxiosPrivate } from "@/hooks/useAxiosPrivate";
 import {
-NoRecordsFound
+  ErrorTitle,
+  Error,
+  NoRecordsFound,
+  Success
 } from "@/shared";
 import { RoutesChannel } from "@/constants";
 import { TermButton } from "@/components/FormInputs";
@@ -55,6 +61,7 @@ export const ListsContainer: SFC<ListsContainerProps> = memo(({
   }, []);
   
   const router = useRouter();
+  const { auth } = useAuth();
 
   const { searchQuery, setSearchQuery, debouncedQuery, filteredData } = useSearch<ListItem>({
     data: Data,
@@ -65,7 +72,7 @@ export const ListsContainer: SFC<ListsContainerProps> = memo(({
   const [activeModalId, setActiveModalId] = useState<number | null>(null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
-  const flashListRef = useRef<FlashListRef<ListItem>>(null);
+  const flashListRef = useRef<FlashList<ListItem>>(null);
   const hadSearchQueryRef = useRef(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
@@ -146,10 +153,10 @@ export const ListsContainer: SFC<ListsContainerProps> = memo(({
   }, [activeModalId, FetchData, Title, debouncedQuery]);
 
   const headerComponent = useMemo(() => (
-    <S.View className="bg-slate-100 dark:bg-slate-950 z-10 px-4 py-5">
+    <S.View className="bg-slate-100 z-10 px-4 py-5">
       <S.View className="mb-4">
-        <S.Text className="uppercase text-gray-600 dark:text-slate-300 text-lg font-pbold tracking-wider">
-          {Title} <S.Text className="text-gray-400 dark:text-slate-500 text-base font-pregular">({filteredData.length})</S.Text>
+        <S.Text className="uppercase text-gray-600 text-lg font-pbold tracking-wider">
+          {Title} <S.Text className="text-gray-400 text-base font-pregular">({filteredData.length})</S.Text>
         </S.Text>
       </S.View>
       <S.View className="w-full">
@@ -186,6 +193,7 @@ export const ListsContainer: SFC<ListsContainerProps> = memo(({
             data={filteredData}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            estimatedItemSize={88}
           contentContainerStyle={{
             paddingBottom: 20,
             paddingTop: 10,

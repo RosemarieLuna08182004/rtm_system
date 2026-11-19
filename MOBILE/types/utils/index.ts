@@ -1,4 +1,5 @@
 export * from './genericTypes'
+export * from './channel'
 export * from './alert'
 export * from './toast'
 export * from './noRecord'

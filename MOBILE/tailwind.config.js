@@ -1,14 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   presets: [require('nativewind/preset')],
-  // Theme is chosen in the app (System / Light / Dark), so dark mode follows a class.
-  darkMode: 'class',
   content: [
     "./App.{js,jsx,ts,tsx}", // ✅ Add this
     "./app/**/*.{js,jsx,ts,tsx}",
-    "./components/**/*.{js,jsx,ts,tsx}",
-    "./context/**/*.{js,jsx,ts,tsx}",
-    "./utils/**/*.{js,jsx,ts,tsx}"
+    "./components/**/*.{js,jsx,ts,tsx}"
   ],
   theme: {
     extend: {

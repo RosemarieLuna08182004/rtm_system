@@ -1,4 +1,5 @@
 export * from './utils'
+export * from './store'
 export * from './storage'
 export * from './components'
 export * from './roles'

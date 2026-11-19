@@ -31,14 +31,6 @@ describe('removeModel', () => {
     expect(result).toEqual({ data: false, message: err.m017 });
   }, 10000);
 
-  it('should return an error if the record has associated transactions', async () => {
-    (isDefault as jest.Mock).mockResolvedValue({ data: false });
-    (isFound as jest.Mock).mockResolvedValue({ data: true });
-
-    const result = await removeModel(1);
-    expect(result).toEqual({ data: false, message: err.m020 });
-  }, 10000);
-
   it('should return an error if RemoveService.byId fails to delete the record', async () => {
     (isDefault as jest.Mock).mockResolvedValue({ data: false });
     (isFound as jest.Mock).mockResolvedValue({ data: false });

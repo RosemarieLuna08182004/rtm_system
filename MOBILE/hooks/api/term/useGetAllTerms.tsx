@@ -1,20 +1,52 @@
+import { API } from "@/constants";
+import { useAxiosPrivate } from "../../useAxiosPrivate";
+import { Error, ErrorTitle } from "@/shared";
 import { TermTables } from "@/types";
-import { termApi } from "@/services/api";
-import { useApiQuery } from "../useApiQuery";
+import { useCallback, useEffect, useState } from "react";
+import { Alert } from "react-native";
 
-const EMPTY: TermTables = [];
-const byTermName = (a: any, b: any) =>
-    String(a?.Term ?? '').trim().toLowerCase().localeCompare(String(b?.Term ?? '').trim().toLowerCase(), undefined, {
-        sensitivity: 'base',
-        numeric: true,
-        ignorePunctuation: true,
-    });
+export const useGetAllTerms = (ChapterId:number, UserId:number) => {
+    const axios = useAxiosPrivate();
+    const [records, setRecords] = useState<TermTables>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
-export const useGetAllTerms = (ChapterId: number, UserId: number) => {
-    const { data, loading, error, refetch } = useApiQuery(
-        async (signal) => [...((await termApi.getAllByChapter(ChapterId, UserId, signal)) ?? [])].sort(byTermName),
-        [ChapterId, UserId],
-        { enabled: ChapterId !== 0 && UserId !== 0, initialData: EMPTY },
-    );
-    return { records: data, loading, error, refetch };
+    const fetchData = useCallback(async () => {
+        if (ChapterId === 0 || UserId === 0) {
+            setLoading(false);
+            return;
+        }
+        
+        setLoading(true);
+        try {
+            const response = await axios.get(`${API}/user/term/get-all-terms-by-chapter/${ChapterId}/${UserId}`);
+            
+            const sortedData = [...response.data.data].sort((a, b) => {
+                const aTerm = (a?.Term || '').toString().trim().toLowerCase();
+                const bTerm = (b?.Term || '').toString().trim().toLowerCase();
+                
+                return aTerm.localeCompare(bTerm, undefined, {
+                    sensitivity: 'base',
+                    numeric: true,
+                    ignorePunctuation: true
+                });
+            });
+            
+            setRecords(sortedData);
+        } catch (error: any) {
+            setRecords([]);
+            Alert.alert(ErrorTitle.m0001, Error.m0001)
+        } finally {
+            setLoading(false);
+        }
+    }, [axios, ChapterId, UserId]);
+
+    useEffect(() => {
+        fetchData();
+    }, [ChapterId, UserId, axios]);
+
+    return {
+        records,
+        loading,
+        refetch: fetchData,
+    };
 };

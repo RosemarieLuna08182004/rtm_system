@@ -1,20 +1,22 @@
+import { NodeEnvironment } from "@/types/tables"
+
+export const NODE_ENV = NodeEnvironment.PRODUCTION;
+
+export const API_PORT = '3000';
 export const API_VERSION = '/api/v1';
 
-const PRODUCTION_SERVER = 'https://rtm-aiven-backend.onrender.com';
+const isDevelopment = false;
 
-// Which server the app talks to.
-// - Default: production.
-// - For local testing, set EXPO_PUBLIC_API_URL in MOBILE/.env.development.local, e.g.
-//   EXPO_PUBLIC_API_URL=http://192.168.37.210:3000  (your PC's Wi-Fi IP, not "localhost").
-//   Expo only loads that file for `npx expo start`, never for release builds.
-// - Safety net: a release build ignores any address that is not HTTPS.
-const configured = (process.env.EXPO_PUBLIC_API_URL ?? '').trim().replace(/\/+$/, '');
-const usable = configured && (__DEV__ || configured.startsWith('https://'));
+console.log('Current environment:', NODE_ENV);
 
-export const API_SERVER = usable ? configured : PRODUCTION_SERVER;
-export const API = `${API_SERVER}${API_VERSION}`;
-export const IS_LOCAL_API = API_SERVER !== PRODUCTION_SERVER;
+export const API_SERVER = isDevelopment 
+  ? 'localhost'
+  : 'rtm-aiven-backend.onrender.com';
 
-if (__DEV__) {
+export const API = isDevelopment 
+  ? `http://${API_SERVER}:${API_PORT}${API_VERSION}`
+  : `https://${API_SERVER}${API_VERSION}`;
+
+if (isDevelopment) {
   console.log('API URL:', API);
 }

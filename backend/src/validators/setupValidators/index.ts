@@ -5,3 +5,5 @@ export * from "./term";
 export * from "./termLine";
 export * from "./user";
 export * from "./userLine";
+
+export * from "./importRows";

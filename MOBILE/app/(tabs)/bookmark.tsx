@@ -1,18 +1,9 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { StyleSheet, RefreshControl, View } from 'react-native';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { StyleSheet, RefreshControl, Dimensions, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { BookmarkOutlineIcon } from '@/constants';
 import { AnimatedSearch } from '@/components/Filters/SearchFilter';
-import * as S from '@/styles';
-import { ActivityIndicator, FadeInItem, Header, StateView } from '@/components';
-import { RequireAuth, useBookmarkContext, useThemeColors } from '@/context';
-import { useAuth, useGetMyBookmarks } from '@/hooks';
-import { TermTable } from '@/types/tables';
-import { RoutesChannel } from '@/constants';
-import { BookmarkTermButton } from '@/components/FormInputs';
-import { TermStatus } from '@/types/components/status';
-import { responsiveDimension } from '@/utils';
 
 // Memoized BookmarkTermButton to prevent unnecessary re-renders
 const MemoizedBookmarkTermButton = React.memo(({ Text, OnPress, Status, data, IsChapter, Disabled, OnUnbookmark }: any) => (
@@ -28,6 +19,23 @@ const MemoizedBookmarkTermButton = React.memo(({ Text, OnPress, Status, data, Is
 ));
 
 MemoizedBookmarkTermButton.displayName = 'MemoizedBookmarkTermButton';
+import * as S from '@/styles';
+import { ActivityIndicator, Header } from '@/components';
+import { RequireAuth, useBookmarkContext } from '@/context';
+import { useAuth, useToggle, useGetAllBookmark } from '@/hooks';
+import { TermTable } from '@/types/tables';
+import { useAxiosPrivate } from '@/hooks/useAxiosPrivate';
+import { API, RoutesChannel } from '@/constants';
+import { BookmarkTermButton } from '@/components/FormInputs';
+import { TermStatus } from '@/types/components/status';
+import { responsiveDimension } from '@/utils';
+
+interface Chapter {
+  Id: number;
+  Title: string;
+  ChapterId: number;
+  Status: string;
+}
 
 interface TermWithChapter extends Omit<TermTable, 'Status' | 'TermId' | 'UserTermsId'> {
   chapterTitle: string;
@@ -36,10 +44,6 @@ interface TermWithChapter extends Omit<TermTable, 'Status' | 'TermId' | 'UserTer
   UserTermsId: number;
   ChapterId: number;
 }
-
-type ListItem =
-  | { type: 'header'; title: string; id: string; count: number }
-  | { type: 'item'; item: TermWithChapter; id: string };
 
 interface ChapterSection {
   title: string;
@@ -154,149 +158,320 @@ const styles = StyleSheet.create({
 export default function Bookmark() {
   const router = useRouter();
   const { auth } = useAuth();
+  const axios = useAxiosPrivate();
   const UserId = auth?.user?.Id ?? 0;
-  // One request for every bookmark, grouped by chapter (was one request per chapter).
-  const { groups, loading, error, refreshing, refetch } = useGetMyBookmarks(UserId);
-  const { bookmarkVersion } = useBookmarkContext();
-  const theme = useThemeColors();
+  const { records: chapters = [], refetch, loading } = useGetAllBookmark({ UserId });
   const [sections, setSections] = useState<ChapterSection[]>([]);
+  const [loadingState, setLoadingState] = useState<'idle' | 'initial' | 'refreshing' | 'fetching'>('initial');
+  const { updateBookmarkStatus, bookmarkVersion, lastChangeType } = useBookmarkContext();
+  const [lastBookmarkVersion, setLastBookmarkVersion] = useState(0);
+  const [isFetching, setIsFetching] = useState(false);
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false);
+  const [hasBookmarksInDatabase, setHasBookmarksInDatabase] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [totalFilteredCount, setTotalFilteredCount] = useState(0);
 
-  // Server data -> list sections (already sorted by the server).
-  useEffect(() => {
-    setSections(groups.map((group) => ({
-      title: group.Title || `Chapter ${group.ChapterId}`,
-      chapterId: group.ChapterId,
-      data: group.terms.map((term) => ({
-        ...term,
-        chapterTitle: group.Title,
-      })) as unknown as TermWithChapter[],
-    })));
-  }, [groups]);
 
-  // Reload on focus only when a bookmark changed somewhere since the last load.
-  const loadedVersionRef = useRef(bookmarkVersion);
-  useFocusEffect(
-    useCallback(() => {
-      if (loadedVersionRef.current !== bookmarkVersion) {
-        loadedVersionRef.current = bookmarkVersion;
-        refetch(true);
-      }
-    }, [bookmarkVersion, refetch])
-  );
+  const { height } = Dimensions.get('window');
+  const responsivePaddingBottom = height * 0.15;
 
+  // Optimized flattening of sections data with useMemo
   const filteredSections = useMemo(() => {
-    if (!searchQuery.trim()) return sections;
+    if (!searchQuery.trim()) {
+      setTotalFilteredCount(sections.reduce((sum, s) => sum + s.data.length, 0));
+      return sections;
+    }
+    
     const query = searchQuery.toLowerCase().trim();
-    return sections
+    const filtered = sections
       .map(section => ({
         ...section,
-        data: section.data.filter(term =>
-          (term.Term ?? '').toLowerCase().includes(query)
+        data: section.data.filter(term => 
+          term.Term.toLowerCase().includes(query)
         )
       }))
       .filter(section => section.data.length > 0);
+    
+    setTotalFilteredCount(filtered.reduce((sum, s) => sum + s.data.length, 0));
+    return filtered;
   }, [sections, searchQuery]);
 
-  const totalFilteredCount = useMemo(
-    () => filteredSections.reduce((sum, s) => sum + s.data.length, 0),
-    [filteredSections]
-  );
-
   const flatListData = useMemo(() => {
-    const result: ListItem[] = [];
-    for (const section of filteredSections) {
+    const result: Array<{type: 'header', title: string, id: string, count: number} | {type: 'item', item: TermWithChapter, id: string}> = [];
+    
+    for (let i = 0; i < filteredSections.length; i++) {
+      const section = filteredSections[i];
+      // Add section header with count
       result.push({
         type: 'header',
         title: section.title,
         id: `header-${section.chapterId}`,
         count: section.data.length
       });
-      for (const item of section.data) {
-        result.push({ type: 'item', item, id: `item-${item.TermId}-${item.ChapterId}` });
+      
+      // Add section items
+      const { data } = section;
+      for (let j = 0; j < data.length; j++) {
+        const item = data[j];
+        result.push({
+          type: 'item',
+          item,
+          id: `item-${item.TermId}-${item.ChapterId}`
+        });
       }
     }
+    
     return result;
   }, [filteredSections]);
 
-  // Unbookmarked on this screen: remove the row immediately.
+  // Define item types for better type safety
+  type ListItem = 
+    | { type: 'header'; title: string; id: string; count: number }
+    | { type: 'item'; item: TermWithChapter; id: string };
+
+  // Optimized removal function for immediate UI update
   const handleRemoveBookmark = useCallback((termId: number, chapterId: number) => {
-    setSections(prevSections => prevSections
-      .map(section => section.chapterId === chapterId
-        ? { ...section, data: section.data.filter(term => term.TermId !== termId) }
-        : section)
-      .filter(section => section.data.length > 0));
+    setSections(prevSections => {
+      const updatedSections = prevSections.map(section => {
+        if (section.chapterId === chapterId) {
+          const filteredData = section.data.filter(term => term.TermId !== termId);
+          return { ...section, data: filteredData };
+        }
+        return section;
+      }).filter(section => section.data.length > 0); // Remove empty sections
+      
+      // Update hasBookmarksInDatabase if no sections left
+      if (updatedSections.length === 0) {
+        setHasBookmarksInDatabase(false);
+      }
+      
+      return updatedSections;
+    });
   }, []);
 
-  const renderItem = useCallback(({ item, index }: { item: ListItem; index: number }) => {
+  // Optimized renderItem with proper typing and memoization
+  const renderItem = useCallback(({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
       return (
         <S.View className="px-4 py-3" style={styles.sectionHeader}>
-          <S.Text style={[styles.sectionHeaderText, { color: theme.mutedText }]}>{item.title}</S.Text>
+          <S.Text style={styles.sectionHeaderText}>{item.title}</S.Text>
+        </S.View>
+      );
+    } 
+    
+    if (item.type === 'item' && item.item) {
+      const { item: term } = item;
+      return (
+        <S.View className="px-4">
+          <MemoizedBookmarkTermButton
+            Text={term.Term}
+            OnPress={() => {
+              router.push({
+                pathname: RoutesChannel.TERM_LINE,
+                params: { 
+                  ChapterId: term.ChapterId, 
+                  TermId: term.TermId 
+                },
+              });
+            }}
+            Status={term.Status as TermStatus}
+            data={{ 
+              TermId: term.TermId, 
+              UserTermsId: term.UserTermsId 
+            }}
+            IsChapter={false}
+            Disabled={false}
+            OnUnbookmark={() => handleRemoveBookmark(term.TermId, term.ChapterId)}
+          />
         </S.View>
       );
     }
-
-    const { item: term } = item;
-    return (
-      <FadeInItem index={index} style={{ paddingHorizontal: 16 }}>
-        <MemoizedBookmarkTermButton
-          Text={term.Term}
-          OnPress={() => {
-            router.push({
-              pathname: RoutesChannel.TERM_LINE,
-              params: {
-                ChapterId: term.ChapterId,
-                TermId: term.TermId,
-                Term: term.Term,
-              },
-            });
-          }}
-          Status={term.Status as TermStatus}
-          data={{
-            TermId: term.TermId,
-            UserTermsId: term.UserTermsId
-          }}
-          IsChapter={false}
-          Disabled={false}
-          OnUnbookmark={() => handleRemoveBookmark(term.TermId, term.ChapterId)}
-        />
-      </FadeInItem>
-    );
+    
+    return null;
   }, [router, handleRemoveBookmark]);
 
+  // Optimized key extractor for FlashList
   const keyExtractor = useCallback((item: ListItem) => item.id, []);
-  const getItemType = useCallback((item: ListItem) => item.type, []);
 
-  const handleRefresh = useCallback(() => {
-    loadedVersionRef.current = bookmarkVersion;
-    refetch(true);
-  }, [bookmarkVersion, refetch]);
+  // Estimate item sizes for better performance (in pixels)
+  const getItemSize = useCallback((item: ListItem) => {
+    return item.type === 'header' ? 50 : 80; // Adjust based on your actual item heights
+  }, []);
 
-  const isInitialLoading = loading && sections.length === 0;
-  const isRefreshing = refreshing;
-  const showErrorState = !loading && !!error && sections.length === 0;
-  const showEmptyState = !loading && !error && sections.length === 0;
+  // Function to help FlashList recycle components efficiently
+  const getItemType = useCallback((item: ListItem) => {
+    return item.type; // 'header' or 'item'
+  }, []);
+
+
+  const fetchBookmarkedTerms = async (isRefresh = false) => {
+    if (!Array.isArray(chapters) || chapters.length === 0) {
+      setSections([]);
+      setHasBookmarksInDatabase(false);
+      setHasCompletedInitialLoad(true);
+      setLoadingState('idle');
+      return;
+    }
+
+    // Prevent concurrent fetches
+    if (isFetching) {
+      return;
+    }
+
+    setIsFetching(true);
+    setLoadingState(isRefresh ? 'refreshing' : 'fetching');
+    
+    // Reset bookmark detection state when starting fresh fetch
+    if (!isRefresh) {
+      setHasBookmarksInDatabase(null);
+    }
+    
+    try {
+      // First sort chapters alphabetically by title
+      const sortedChapters = [...chapters as unknown as Chapter[]].sort((a, b) => 
+        (a.Title || `Chapter ${a.ChapterId}`).toLowerCase().localeCompare(
+          (b.Title || `Chapter ${b.ChapterId}`).toLowerCase()
+        )
+      );
+
+      const chapterPromises = sortedChapters.map(async (chapter) => {
+        try {
+          const response = await axios.get(
+            `${API}/user/term/get-all-bookmark/${UserId}/${chapter.ChapterId}`
+          );
+
+          const terms = (response.data?.data || []).map((term: TermTable) => ({
+            ...term,
+            chapterTitle: chapter.Title || `Chapter ${chapter.ChapterId}`,
+            ChapterId: chapter.ChapterId,
+          }));
+
+          // Sort terms alphabetically with case-insensitive comparison, trimming whitespace
+          const sortedTerms = [...terms].sort((a, b) =>
+            a.Term.trim().toLowerCase().localeCompare(b.Term.trim().toLowerCase())
+          );
+          
+          return {
+            title: chapter.Title || `Chapter ${chapter.ChapterId}`,
+            data: sortedTerms,
+            chapterId: chapter.ChapterId,
+            sortTitle:
+              chapter.Title?.toLowerCase() ||
+              `chapter ${chapter.ChapterId.toString().padStart(5, '0')}`,
+          };
+        } catch (error) {
+          return null;
+        }
+      });
+
+      let chapterSections = (await Promise.all(chapterPromises)).filter(
+        (section): section is ChapterSection & { sortTitle: string } =>
+          section !== null && section.data.length > 0
+      );
+
+      // Sort sections by chapter title with case-insensitive comparison
+      chapterSections.sort((a, b) => 
+        a.sortTitle.toLowerCase().localeCompare(b.sortTitle.toLowerCase())
+      );
+
+      setSections(chapterSections);
+      setLastBookmarkVersion(bookmarkVersion);
+      setHasCompletedInitialLoad(true);
+      
+      // Determine if there are bookmarks in the database
+      setHasBookmarksInDatabase(chapterSections.length > 0);
+    } catch (error) {
+      console.error('❌ [BookmarkScreen] Error fetching bookmarked terms:', error);
+      setSections([]);
+      setHasCompletedInitialLoad(true);
+      setHasBookmarksInDatabase(false);
+    } finally {
+      setLoadingState('idle');
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    if (chapters.length > 0) {
+      setLoadingState('initial');
+      fetchBookmarkedTerms();
+    } else if (chapters.length === 0 && !loading) {
+      // No chapters means no bookmarks - show empty state immediately
+      setSections([]);
+      setHasBookmarksInDatabase(false);
+      setHasCompletedInitialLoad(true);
+      setLoadingState('idle');
+    }
+  }, [chapters, loading]);
+
+  useEffect(() => {
+    if (bookmarkVersion !== lastBookmarkVersion && !isFetching) {
+      // Only trigger full refresh for bookmark additions, not removals
+      // Removals are handled locally by handleRemoveBookmark
+      if (lastChangeType === 'add') {
+        // Force refetch of chapters when bookmark is added
+        // This ensures new chapters appear immediately when first bookmark is added
+        const refetchAndUpdate = async () => {
+          await refetch(); // Refetch chapters list first
+          // fetchBookmarkedTerms will be called by the chapters useEffect
+        };
+        
+        refetchAndUpdate();
+      }
+      setLastBookmarkVersion(bookmarkVersion);
+    }
+  }, [bookmarkVersion, lastBookmarkVersion, lastChangeType, refetch, isFetching]);
+
+  // Reload data when screen comes into focus (e.g., when user clicks bookmarks tab)
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
+
+  const handleRefresh = async () => {
+    setLoadingState('refreshing');
+    setSections([]); // Clear existing sections to show loading state
+    try {
+      await refetch();
+      await fetchBookmarkedTerms(true);
+    } finally {
+      setLoadingState('idle');
+    }
+  };
+
+  const sectionsKey = sections.map((s) => s.chapterId).join(',');
+  // Unified loading state management
+  const isInitialLoading = (loading || loadingState === 'initial' || loadingState === 'fetching') && (sections.length === 0 || hasBookmarksInDatabase === null);
+  const isRefreshing = loadingState === 'refreshing';
+  const showEmptyState = hasCompletedInitialLoad && loadingState === 'idle' && !loading && sections.length === 0 && (hasBookmarksInDatabase === false || (hasBookmarksInDatabase === null && chapters.length === 0));
+  
+  // Add effect to handle the transition from loading to idle when data is loaded
+  useEffect(() => {
+    if (!loading && loadingState === 'initial' && sections.length === 0 && hasCompletedInitialLoad) {
+      // If we're done loading chapters but have no bookmarks, show empty state
+      setLoadingState('idle');
+    }
+  }, [loading, loadingState, sections.length, hasCompletedInitialLoad]);
 
   return (
     <RequireAuth>
       <S.View className="flex-1 bg-blue-700 pt-12">
         <Header ClassName="z-90" title="Bookmarks" />
-        {showErrorState ? (
-          <StateView Kind="error" Title="Could not load bookmarks" Message={error ?? undefined} OnRetry={handleRefresh} />
-        ) : isInitialLoading ? (
-          <S.View className="flex-1 bg-slate-100 dark:bg-slate-950 items-center justify-center">
+        {isInitialLoading ? (
+          <S.View className="flex-1 bg-slate-100 items-center justify-center">
             <ActivityIndicator />
-            <S.Text className="text-gray-700 dark:text-slate-200 text-lg mt-4 font-pmedium">Loading bookmarks...</S.Text>
+            <S.Text className="text-gray-700 text-lg mt-4 font-pmedium">Loading bookmarks...</S.Text>
           </S.View>
         ) : (
-          <S.View className="flex-1 bg-slate-100 dark:bg-slate-950">
+          <S.View className="flex-1 bg-slate-100">
             {/* Header with count and search */}
             {sections.length > 0 && !showEmptyState && (
-              <S.View className="bg-slate-100 dark:bg-slate-950 z-10 px-5 py-5">
+              <S.View className="bg-slate-100 z-10 px-5 py-5">
                 <S.View className="mb-4 px-3">
-                  <S.Text className="uppercase text-gray-600 dark:text-slate-300 text-lg font-pbold tracking-wider">
-                    Bookmarks <S.Text className="text-gray-400 dark:text-slate-500 text-base font-pregular">({totalFilteredCount})</S.Text>
+                  <S.Text className="uppercase text-gray-600 text-lg font-pbold tracking-wider">
+                    Bookmarks <S.Text className="text-gray-400 text-base font-pregular">({totalFilteredCount})</S.Text>
                   </S.Text>
                 </S.View>
                 <S.View className="w-full px-3">
@@ -326,24 +501,24 @@ export default function Bookmark() {
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <View style={{ maxWidth: 400, width: '100%', padding: 20 }}>
                     <View style={{ alignItems: 'center', marginBottom: 24 }}>
-                      <View style={[styles.iconContainer, { backgroundColor: theme.card }]}>
+                      <View style={styles.iconContainer}>
                         <S.Image 
                           source={BookmarkOutlineIcon} 
                           style={{ width: 48, height: 48, tintColor: '#3b82f6' }}
                         />
                       </View>
-                      <S.Text style={[styles.emptyTitle, { color: theme.text }]}>
+                      <S.Text style={styles.emptyTitle}>
                         No bookmarks yet
                       </S.Text>
-                      <S.Text style={[styles.emptySubtitle, { color: theme.mutedText }]}>
+                      <S.Text style={styles.emptySubtitle}>
                         Your bookmarked terms will appear here
                       </S.Text>
                     </View>
 
-                    <View style={[styles.instructionsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                      <S.Text style={[styles.instructionsTitle, { color: theme.text }]}>How to bookmark:</S.Text>
+                    <View style={styles.instructionsContainer}>
+                      <S.Text style={styles.instructionsTitle}>How to bookmark:</S.Text>
                       {[
-                        { step: '1', text: 'Open a volume from the Volumes tab' },
+                        { step: '1', text: 'Open a chapter from the home screen' },
                         {
                           step: '2',
                           text: 'Tap the bookmark icon next to a term to save it',
@@ -355,7 +530,7 @@ export default function Bookmark() {
                             <S.Text style={styles.stepNumberText}>{step}</S.Text>
                           </View>
                           <View style={{ flex: 1 }}>
-                            <S.Text style={[styles.stepText, { color: theme.mutedText }]}>
+                            <S.Text style={styles.stepText}>
                               {icon ? (
                                 <>
                                   Tap the <S.Image source={BookmarkOutlineIcon} style={{ width: 16, height: 16, tintColor: '#3b82f6', marginTop: 2 }} /> icon next to a term to save it
@@ -368,15 +543,6 @@ export default function Bookmark() {
                         </View>
                       ))}
                     </View>
-
-                    <S.TouchableOpacity
-                      onPress={() => router.push(RoutesChannel.VOLUMES)}
-                      className="mt-6 self-center flex-row items-center rounded-full px-6 py-3 bg-blue-700 dark:bg-blue-600"
-                      accessibilityRole="button"
-                      accessibilityLabel="Browse volumes"
-                    >
-                      <S.Text className="text-white font-psemibold">Browse volumes</S.Text>
-                    </S.TouchableOpacity>
                   </View>
                 </View>
               </S.ScrollView>
@@ -387,6 +553,7 @@ export default function Bookmark() {
                   renderItem={renderItem}
                   keyExtractor={keyExtractor}
                   getItemType={getItemType}
+                  estimatedItemSize={88}
                   contentContainerStyle={{
                     paddingBottom: 20,
                     paddingTop: 10,

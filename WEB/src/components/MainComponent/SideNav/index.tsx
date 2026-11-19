@@ -1,9 +1,9 @@
 import { GenericFunction, RouteChannel, SFC } from "../../../types";
 import * as S from '../../../styles'
-import { Menu } from "../../Menu";
-import { mdiCogOutline , mdiBookOutline  ,mdiViewDashboardOutline,  mdiFormSelect, mdiTextShort, mdiCardTextOutline, mdiSaleOutline , mdiTagOutline, mdiAccountGroupOutline, mdiLogout } from "@mdi/js";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useSignOut } from "../../../hooks";
+import { Menu, MenuSection } from "../../Menu";
+import { mdiCogOutline , mdiBookOutline  ,mdiHome,  mdiFormSelect, mdiTextShort, mdiCardTextOutline, mdiAccountGroupOutline, mdiLogout } from "@mdi/js";
+import { useNavigate } from "react-router-dom";
+import { useConfirmLogout } from "../../../context";
 import { twMerge } from "tailwind-merge";
 
 interface SideNavProps {
@@ -12,34 +12,34 @@ interface SideNavProps {
 
 export const SideNav : SFC<SideNavProps> = ({ClassName, Toggle}) => {
     const navigate = useNavigate();
-    const {reSignOut} = useSignOut()
-    const { pathname } = useLocation();
-    // Highlight the section you are in ("/a/term" must not also light up "/a/termline").
-    const is = (route: string) => route === RouteChannel.DASHBOARD
-        ? pathname === route || pathname === route + '/'
-        : pathname === route || pathname.startsWith(route + '/');
+    const confirmLogout = useConfirmLogout() // asks "Log out?" first
 
     return (
         <>
             <S.Container className={twMerge("", ClassName)}>
-                <S.Divider className="mb-2 flex justify-center items-center h-12">
-                    <S.Image src={'/image/R-white.png'} className=" w-[60px] " />
+                <S.Divider className="mb-4 flex justify-center items-center gap-0 h-12 px-0">
+                    <S.Image src={'/image/R-white.png'} className="w-[80px] shrink-0" />
+                    <S.Divider className="flex flex-col leading-tight">
+                        <S.Span className="text-white font-bold text-lg tracking-wide">RTM</S.Span>
+                        <S.Span className="text-blue-200 text-xs">Roots, Terms, Morphology</S.Span>
+                    </S.Divider>
                 </S.Divider>
-                <S.Divider className="mb-2" >
-                    <Menu icon={ mdiViewDashboardOutline } label="Dashboard" onClick={() => {Toggle();navigate(RouteChannel.DASHBOARD)}} active={is(RouteChannel.DASHBOARD)} />
-                    <Menu icon={ mdiBookOutline } label="Volume" onClick={() => {Toggle();navigate(RouteChannel.CHAPTER)}} active={is(RouteChannel.CHAPTER)} />
-                    <Menu icon={ mdiTextShort } label="Term" onClick={() => {Toggle();navigate(RouteChannel.TERM)}} active={is(RouteChannel.TERM)} />
-                    <Menu icon={ mdiCardTextOutline } label="Sub Term" onClick={() => {Toggle();navigate(RouteChannel.TERM_LINE)}} active={is(RouteChannel.TERM_LINE)} />
-                    <Menu icon={ mdiFormSelect } label="Category" onClick={() => {Toggle();navigate(RouteChannel.CATEGORY)}} active={is(RouteChannel.CATEGORY)} />
-                    <Menu icon={ mdiTagOutline } label="Product" onClick={() => {Toggle();navigate(RouteChannel.PRODUCT)}} active={is(RouteChannel.PRODUCT)} />
-                    <Menu icon={ mdiAccountGroupOutline } label="Users" onClick={() => {Toggle();navigate(RouteChannel.USER)}} active={is(RouteChannel.USER)} />
-                    <Menu icon={ mdiSaleOutline } label="Sales" onClick={() => {Toggle();navigate(RouteChannel.SALES)}} active={is(RouteChannel.SALES)} />
-                    <hr className="border-secondary"/>
-                </S.Divider>
-                <S.Divider className="bottom-0 relative border-top">
-                    <Menu icon={ mdiCogOutline } label="Settings" onClick={() => {Toggle();navigate(RouteChannel.SETTINGS)}} active={is(RouteChannel.SETTINGS)} />
-                    <Menu icon={ mdiLogout  } label="Logout" onClick={reSignOut} />
-                </S.Divider>
+                <nav aria-label="Main" className="flex flex-col gap-1">
+                    <Menu icon={ mdiHome } label="Dashboard" to={RouteChannel.DASHBOARD} onClick={() => {Toggle();navigate(RouteChannel.DASHBOARD)}} />
+
+                    <MenuSection label="Knowledge" />
+                    <Menu icon={ mdiBookOutline } label="Volumes" to={RouteChannel.CHAPTER} onClick={() => {Toggle();navigate(RouteChannel.CHAPTER)}} />
+                    <Menu icon={ mdiTextShort } label="Terms" to={RouteChannel.TERM} onClick={() => {Toggle();navigate(RouteChannel.TERM)}} />
+                    <Menu icon={ mdiCardTextOutline } label="Sub Terms" to={RouteChannel.TERM_LINE} onClick={() => {Toggle();navigate(RouteChannel.TERM_LINE)}} />
+                    <Menu icon={ mdiFormSelect } label="Categories" to={RouteChannel.CATEGORY} onClick={() => {Toggle();navigate(RouteChannel.CATEGORY)}} />
+
+                    <MenuSection label="Management" />
+                    <Menu icon={ mdiAccountGroupOutline } label="Users" to={RouteChannel.USER} onClick={() => {Toggle();navigate(RouteChannel.USER)}} />
+
+                    <MenuSection label="System" />
+                    <Menu icon={ mdiCogOutline } label="Settings" to={RouteChannel.SETTINGS} onClick={() => {Toggle();navigate(RouteChannel.SETTINGS)}} />
+                    <Menu icon={ mdiLogout } label="Logout" onClick={confirmLogout} />
+                </nav>
             </S.Container>
         </>
     )

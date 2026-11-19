@@ -21,14 +21,14 @@ export const CustomInput: SFC<InputProps> = ({
 
     return (
         <S.View className={`mb-4 ${ClassName}`}>
-            <S.Text className='text-gray-700 dark:text-slate-200 text-medium font-pmedium mb-1.5'>{Text}</S.Text>
+            <S.Text className='text-gray-700 text-medium font-pmedium mb-1.5'>{Text}</S.Text>
             <S.View 
                 className={`w-full h-14 px-4 rounded-lg border-2 flex flex-row items-center 
-                    ${isFocused ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-slate-800' : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900'}
-                    ${Errors ? 'border-red-500 dark:border-red-400' : ''}`}
+                    ${isFocused ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}
+                    ${Errors ? 'border-red-500' : ''}`}
             >
                 <S.TextInput
-                    className="flex-1 text-gray-800 dark:text-slate-100 font-pregular text-base leading-5 h-full py-0 m-0"
+                    className="flex-1 text-gray-800 font-pregular text-base leading-5 h-full py-0 m-0"
                     style={{ textAlignVertical: 'center' }}
                     placeholder={Placeholder}
                     placeholderTextColor="#9CA3AF"
@@ -50,7 +50,7 @@ export const CustomInput: SFC<InputProps> = ({
                 />
             </S.View>
             {Errors && (
-                <S.Text className="text-red-500 dark:text-red-400 text-xs mt-1.5 ml-1 font-pregular">
+                <S.Text className="text-red-500 text-xs mt-1.5 ml-1 font-pregular">
                     {Errors}
                 </S.Text>
             )}

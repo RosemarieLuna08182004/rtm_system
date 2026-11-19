@@ -14,8 +14,6 @@ export const updateModel = async (Id: number = 0, Data: UserTable = UserInitial)
     if (!(await UpdateService.record(Id, DBTable.t007, Fields, Types, Values))) return { data: false, message: Error.m003 };
     return { data: true, message: Success.m004 };
   } catch (error: any) {
-    // A unique key (email, bookmark, unlock) rejected the row.
-    if (error?.code === "ER_DUP_ENTRY") return { data: false, message: Error.m016 };
     logging.log("----------------------------------------");
     logging.error("UserTable-Model [updateModel]:", error.message);
     logging.log("----------------------------------------");

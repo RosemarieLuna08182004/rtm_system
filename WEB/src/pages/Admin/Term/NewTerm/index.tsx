@@ -20,7 +20,7 @@ export const AdminNewTermPage : SFC = ({ClassName}) => {
                     </S.Actions >
             </S.PageTopBar>
             <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
-                <TermForm Title="New Term" IsEdit={false}/>
+                <TermForm Title="New Term" Description="Add a heading term and choose the volume it belongs to." IsEdit={false}/>
             </S.Content> 
         </S.Container> 
         </>

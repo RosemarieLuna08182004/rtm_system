@@ -1,5 +1,7 @@
+import { ErrorTitle, Error } from "@/shared";
 import { colors } from "@/styles";
 import { ButtonColor } from "@/types";
+import { Alert } from "react-native";
 
 export const renderColor = (Color:ButtonColor) => {
     let bgColor = ''

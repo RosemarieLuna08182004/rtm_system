@@ -9,9 +9,9 @@ import { Suspense, useEffect } from "react";
 import React from "react";
 import { SubTermCard } from "../SubTermCard";
 import { Skeleton } from "../../Skeleton";
-import { AudioPlayer } from "../../Audio/AudioPlayer";
+import { ZoomableImage } from "../../ZoomableImage";
   
-export const TermCard: SFC<TermCardProps> = ({ ClassName, Refetch, TermId, TermTitle, ChapterTitle, VoiceOver, Illustration }) => {
+export const TermCard: SFC<TermCardProps> = ({ ClassName, Refetch, TermId, TermTitle, ChapterTitle, Illustration }) => {
     const [modalOpen, toggleModal] = useToggle(false);
     const { records, refetch, loading } = useGetAllTermLineByTerm(TermId);
 
@@ -34,7 +34,6 @@ export const TermCard: SFC<TermCardProps> = ({ ClassName, Refetch, TermId, TermT
                         <S.Span className="txt-md text-primary font-bold">{TermTitle}</S.Span>
                     </S.Content>
                     <S.Content className="flex flex-row gap-2">
-                        {VoiceOver && <AudioPlayer URL={VoiceOver??""} />}
                         <CircleButton 
                             OnClick={toggleModal} 
                             IsNotification={false} 
@@ -47,12 +46,13 @@ export const TermCard: SFC<TermCardProps> = ({ ClassName, Refetch, TermId, TermT
 
                 {/* Illustration section */}
                 {Illustration && (
-                    <div className="mb-4 rounded-lg overflow-hidden">
-                        <S.Image 
-                            src={decodeURIComponent(Illustration.startsWith('http') ? Illustration : `/${Illustration}`)} 
-                            alt={`Illustration for ${TermTitle}`}
-                            className="w-full h-auto max-h-64 object-cover rounded-lg"
-                            onError={(e) => {
+                    <div className="mb-4 rounded-lg overflow-hidden bg-slate-50">
+                        {/* Double-click (or the expand button) opens it full size */}
+                        <ZoomableImage
+                            Src={decodeURIComponent(Illustration.startsWith('http') ? Illustration : `/${Illustration}`)}
+                            Alt={`Illustration for ${TermTitle}`}
+                            ClassName="w-full h-auto max-h-64 object-contain rounded-lg"
+                            OnError={(e) => {
                                 // Try with the encoded URL if the decoded one fails
                                 const target = e.target as HTMLImageElement;
                                 if (target.src !== Illustration) {

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { API } from "../../../constants";
 import {
   chapterValidatorOnCreate,
@@ -8,9 +8,7 @@ import {
 } from "../../../validators";
 import { ChapterModel } from "../../../models";
 import { Error, Success } from "../../../shared";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/chapter`)
 export default class ChapterController {
@@ -73,7 +71,7 @@ export default class ChapterController {
     }
   }
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(
     req: Request,
     res: Response,
@@ -95,7 +93,7 @@ export default class ChapterController {
     }
   }
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(chapterValidatorOnCreate)
   async add(
     req: LoginRequest,
@@ -117,7 +115,7 @@ export default class ChapterController {
     }
   }
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(chapterValidatorOnUpdate)
   async update(
     req: LoginRequest,

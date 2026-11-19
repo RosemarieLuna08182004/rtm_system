@@ -1,1 +1,8 @@
 /node_modules
+/build
+/coverage
+# Secrets come from the host's environment settings, never from the image
+.env
+.env.*
+!.env.example
+*.log

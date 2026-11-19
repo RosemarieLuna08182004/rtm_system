@@ -1,8 +1,9 @@
 import { ButtonType, FormProps, SFC, TermTable, ToastType } from "../../../types";
+import { UnsavedChangesGuard } from "../../../context";
 import * as S from '../../../styles'
 import { twMerge } from "tailwind-merge";
 import { Form, Formik } from "formik";
-import { CustomButton, Input } from "../..";
+import { CustomButton, Input, SectionHeader } from "../..";
 import { termValidator } from "../../../validators";
 import SaveIcon from '@mui/icons-material/Save';
 import { displayToast } from "../../../utils";
@@ -25,7 +26,7 @@ function safeString(val: any): string {
     }
 }
 
-export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = false }) => {
+export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', Description, IsEdit = false, OnSaved }) => {
     const { Id } = useParams<{ Id?: string }>();
     const termIdNum = Number(Id);
     const hasValidId = !isNaN(termIdNum) && termIdNum > 0;
@@ -42,18 +43,15 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = fal
     Term: records?.Term ?? null,
     Focus: null,
     Definition: null,
-    Illustration: typeof records?.Illustration === 'string' ? records.Illustration : '',
-    VoiceOver: typeof records?.VoiceOver === 'string' ? records.VoiceOver : ''
+    Illustration: typeof records?.Illustration === 'string' ? records.Illustration : ''
 }
     const { records: ChapterTitle, loading:ChapterTitleLoad } = useGetChapter(records?.ChapterId || 0)
     const flag = Id?loading&&ChapterTitleLoad?true:false:false
-    //console.log("initial:",initial)
     const handleSubmit = async (values: Term) => {
         try {
             values.Focus = values?.Focus?.trim() || null;
-            console.log(values)
             if (!Id || !Id.trim()) await add(values)
-            else await update(Id, values)
+            else if (await update(Id, values)) OnSaved?.()
         } catch (error: any) {
             displayToast(error.message, ToastType.error)
         }
@@ -63,13 +61,15 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = fal
         <>
             <S.Container className={twMerge(' w-full py-3 ', ClassName)}>
                 <S.Divider className=" mb-4">
-                    <S.Span className="text-xl text-slate-600">{Title}</S.Span>
+                    <SectionHeader Title={Title} Description={Description} />
                 </S.Divider>
                 <S.Content>
                     {!flag ? (
                         <Formik initialValues={initial} onSubmit={handleSubmit} enableReinitialize={true} validateOnMount={true} validationSchema={termValidator}>
                             {({ errors, touched, isValid, isSubmitting, handleChange, values, dirty, setFieldValue, setTouched }) => (
                                 <Form>
+                                {/* Warn before leaving with unsaved changes (not while a save is in progress) */}
+                                <UnsavedChangesGuard When={dirty && !isSubmitting} />
                                 <S.Divider className="flex flex-col w-full ml-1">
                                     {/*<S.Divider className="w-full flex flex-col md:flex-row gap-2">
                                         <S.Divider className="w-full flex flex-col">
@@ -92,19 +92,6 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = fal
                                                 />
                                             </S.Divider>
                                         </S.Divider>
-                                        <S.Divider className="w-full ">
-                                                <Input
-                                                    ClassName="text-zinc-900 mb-3 h-[40px]"
-                                                    errors={errors}
-                                                    type="number"
-                                                    disabled={IsEdit}
-                                                    value={String(Number(values.Coins).toFixed(2))}
-                                                    label="Coins"
-                                                    name="Coins"
-                                                    touched={touched}
-                                                    onChange={handleChange}
-                                                />
-                                        </S.Divider>  
                                     </S.Divider>*/}
                                     <S.Divider className="w-full flex flex-col md:flex-row gap-2">
                                         <S.Divider className="w-full flex flex-col md:w-1/2">
@@ -202,8 +189,6 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = fal
                                                     });
 
                                                     const data = response.data;
-                                                    console.log('Upload response:', data);
-                                                    console.log('data.data.url:', data?.data?.url, typeof data?.data?.url);
                                                     
                                                     if (data && data.data && typeof data.data.url === 'string') {
                                                         setFieldValue('Illustration', data.data.url);
@@ -315,19 +300,6 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = fal
                                         value={typeof values.Illustration === 'string' ? values.Illustration : ''}
                                         label="Illustration"
                                         name="Illustration"
-                                        touched={touched}
-                                        onChange={handleChange}
-                                    />
-                                </S.Divider>
-                                <S.Divider className="w-full">
-                                    <Input
-                                        ClassName="text-zinc-900 mb-3 h-[40px]"
-                                        errors={errors}
-                                        type="text"
-                                        disabled={IsEdit}
-                                        value={typeof values.VoiceOver === 'string' ? values.VoiceOver : ''}
-                                        label="Voice Over"
-                                        name="VoiceOver"
                                         touched={touched}
                                         onChange={handleChange}
                                     />

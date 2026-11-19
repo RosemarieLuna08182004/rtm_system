@@ -37,8 +37,6 @@ export const addModel = async (
       return { data: false, message: Error.m003 };
     return { data: true, message: Success.m002 };
   } catch (error: any) {
-    // A unique key (email, bookmark, unlock) rejected the row.
-    if (error?.code === "ER_DUP_ENTRY") return { data: false, message: Error.m016 };
     logging.log("----------------------------------------");
     logging.error("UserTermsTable-Model [addModel]:", error.message);
     logging.log("----------------------------------------");

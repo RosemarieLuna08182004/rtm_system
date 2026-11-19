@@ -1,28 +1,12 @@
 #Node Modules
-**/node_modules/
+FRONTEND/node_modules/
+BACKEND/node_modules/
+PRODUCTION_TEST/node_modules/
 #ignore env
-**/.env
-**/.env*.local
-**/.env.production
-
-# Added for the GitHub upload: build output, local tools and OS/Office junk
-**/build/
-**/dist/
-**/coverage/
-**/.expo/
-MOBILE/android/
-MOBILE/ios/
-*.apk
-*.aab
-*.log
-.claude/
-**/.vscode/settings.json
-Thumbs.db
-desktop.ini
-.DS_Store
-~$*
-backend/coverage
-backend/.expo
+BACKEND/coverage
+BACKEND/expo
+BACKEND/.env
+BACKEND/ca.pem
 
 # Compiled Lua sources
 luac.out

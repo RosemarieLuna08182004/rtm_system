@@ -1,65 +1,77 @@
 import React from 'react';
 import { TabIcon } from "@/components";
-import { AvatarIcon, BookmarkIcon, HomeIcon, OpenBookIcon } from "@/constants";
+import { AvatarIcon, BookmarkIcon, HomeIcon } from "@/constants";
+import { colors } from "@/styles";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { usePreferences, useThemeColors } from '@/context';
-
-const TABS = [
-    { name: 'home', label: 'Home', icon: HomeIcon },
-    { name: 'volumes', label: 'Volumes', icon: OpenBookIcon },
-    { name: 'bookmark', label: 'Bookmarks', icon: BookmarkIcon },
-    { name: 'profile', label: 'Profile', icon: AvatarIcon },
-];
-
-import { AppErrorBoundary } from '@/components/States/AppErrorBoundary';
-// A screen that crashes shows a friendly 'Try again' page instead of closing the app.
-export { AppErrorBoundary as ErrorBoundary }
+import { CountryPrompt } from '@/components/Modals/CountryPrompt';
 
 export default function TabsLayout() {
     const insets = useSafeAreaInsets();
-    const { isDark, displayScale } = usePreferences();
-    const theme = useThemeColors();
-    // The bar grows with the display size (capped so it never takes over the screen).
-    const barHeight = Math.round(70 * Math.min(displayScale, 1.5));
-
+    
     return (
         <>
-            <Tabs
+            <Tabs 
                 screenOptions={{
                     tabBarShowLabel: false,
-                    tabBarActiveTintColor: theme.primary,
-                    tabBarInactiveTintColor: isDark ? '#64748b' : '#9ca3af',
+                    tabBarActiveTintColor: colors.primary,
+                    tabBarInactiveTintColor: colors.palette.neutral['400'],
                     tabBarStyle: {
-                        backgroundColor: theme.surface,
+                        backgroundColor: colors.white,
                         borderTopWidth: 1,
-                        borderTopColor: theme.border,
-                        height: barHeight + insets.bottom,
-                        paddingTop: 12,
+                        borderTopColor: colors.palette.neutral['100'],
+                        height: 80 + insets.bottom,
+                        paddingTop: 20,  // Increased from 16 to 20
                         paddingBottom: Math.max(insets.bottom, 5),
                         elevation: 0,
                         shadowOpacity: 0,
                     },
                     headerShown: false,
-                    // No tab-switch animation: on Android it could leave a newly opened tab blank.
-                    // Each tab's cards still fade in when it opens.
                 }}>
-                {TABS.map((tab) => (
-                    <Tabs.Screen
-                        key={tab.name}
-                        name={tab.name}
-                        options={{
-                            tabBarAccessibilityLabel: tab.label,
-                            tabBarIcon: ({ color, focused }) => (
-                                <TabIcon Icon={tab.icon} Color={color} Name={tab.label} Focused={focused} />
-                            ),
-                        }}
-                    />
-                ))}
+                <Tabs.Screen
+                    name="home"
+                    options={{
+                        tabBarIcon: ({ color, focused }) => (
+                            <TabIcon 
+                                Icon={HomeIcon} 
+                                Color={color} 
+                                Name="Home" 
+                                Focused={focused} 
+                            />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="bookmark"
+                    options={{
+                        tabBarIcon: ({ color, focused }) => (
+                            <TabIcon 
+                                Icon={BookmarkIcon} 
+                                Color={color} 
+                                Name="Bookmarks" 
+                                Focused={focused} 
+                            />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="profile"
+                    options={{
+                        tabBarIcon: ({ color, focused }) => (
+                            <TabIcon 
+                                Icon={AvatarIcon} 
+                                Color={color} 
+                                Name="Profile" 
+                                Focused={focused} 
+                            />
+                        ),
+                    }}
+                />
             </Tabs>
-            {/* Every tab has a blue header, so light status-bar icons in both themes. */}
-            <StatusBar style="light" />
+            {/* Asks once for a country if the account has none (Google sign-in, older accounts) */}
+            <CountryPrompt />
+            <StatusBar style="auto" />
         </>
     );
 };

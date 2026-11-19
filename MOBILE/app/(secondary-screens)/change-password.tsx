@@ -7,7 +7,7 @@ export default function ChangePassword() {
 	return (
 		<>
 		<RequireAuth>
-			<S.View className="flex-1 bg-white dark:bg-slate-900">
+			<S.View className="flex-1 bg-white">
 				<S.SafeAreaView edges={['top']} className="bg-blue-700 py-0">
 					<SecondaryHeader title="Change Password"/>
 				</S.SafeAreaView>
@@ -16,7 +16,7 @@ export default function ChangePassword() {
 					<ChangePassForm ClassName="w-full"/>
 				</S.ScrollView>
 
-				<S.SafeAreaView edges={['bottom']} className="bg-white dark:bg-slate-900" />
+				<S.SafeAreaView edges={['bottom']} className="bg-white" />
 			</S.View>
 		</RequireAuth>
 		</>

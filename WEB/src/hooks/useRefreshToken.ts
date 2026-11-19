@@ -10,7 +10,7 @@ export const useRefreshToken = () => {
         try {
             const response = await axios.get(`${BASE_URL}/auth/refresh`, {
                 withCredentials: true,
-                timeout: 5000, // 5 second timeout
+                timeout: 30000, // Render's free tier can take ~30s to wake up
                 headers: {
                     'Refresh-Token': auth?.refreshToken
                 }

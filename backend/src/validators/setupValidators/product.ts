@@ -5,7 +5,6 @@ export const productValidatorOnCreate = Joi.object({
     .pattern(/^[A-Za-z\s]+$/)
     .required(), // Only letters, no special characters or numbers
   Price: Joi.number().positive().required(),
-  Coins: Joi.number().integer().positive().required(),
   CreatedBy: Joi.number().integer().positive().optional(),
   DateCreated: Joi.date().iso().optional(),
 });
@@ -15,7 +14,6 @@ export const productValidatorOnUpdate = Joi.object({
     .pattern(/^[A-Za-z\s]+$/)
     .optional(), // Only letters, no special characters or numbers
   Price: Joi.number().positive().optional(),
-  Coins: Joi.number().integer().positive().optional(),
   UpdatedBy: Joi.number().integer().positive().optional(),
   DateCreated: Joi.date().iso().optional(),
 });

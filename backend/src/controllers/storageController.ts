@@ -7,7 +7,7 @@ import { UpdateService, GetService } from '../services';
 import { DBTable } from '../shared/data/dbTables';
 import { Controller, Route } from '../decorators';
 import { API } from '../constants/api';
-import { Authorize, TokenHandler } from '../middleware';
+import { TokenHandler } from '../middleware';
 
 // Configure multer for memory storage
 const upload = multer({
@@ -36,7 +36,7 @@ export class StorageController {
     };
 
     // Upload illustration for term
-    @Route('post', '/term/:termId/illustration', TokenHandler.verifyToken, Authorize.requireRoles(...Authorize.STAFF_ROLES))
+    @Route('post', '/term/:termId/illustration', TokenHandler.verifyToken, TokenHandler.verifyAdmin)
     public async uploadTermIllustration(req: FileRequest, res: Response, next: NextFunction) {
         // Apply upload middleware manually
         await new Promise<void>((resolve, reject) => {
@@ -92,7 +92,7 @@ export class StorageController {
     }
 
     // Delete illustration for terms
-    @Route('delete', '/term/:termId/illustration', TokenHandler.verifyToken, Authorize.requireRoles(...Authorize.STAFF_ROLES))
+    @Route('delete', '/term/:termId/illustration', TokenHandler.verifyToken, TokenHandler.verifyAdmin)
     public async deleteTermIllustration(req: Request, res: Response, next: NextFunction) {
         try {
             const { termId } = req.params;

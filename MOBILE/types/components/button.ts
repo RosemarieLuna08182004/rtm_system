@@ -53,6 +53,4 @@ export interface BookmarkButtonProps {
     OnUnbookmark?: GenericFunction
     IsChapter?: boolean
     NoLoading?: boolean
-    // "tile": white-on-blue rounded square (Terms screen rows); "header": plain white icon (term header)
-    Variant?: 'default' | 'tile' | 'header'
 }

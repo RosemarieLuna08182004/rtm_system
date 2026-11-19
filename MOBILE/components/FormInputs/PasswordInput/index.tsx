@@ -10,14 +10,14 @@ export const PasswordInput: SFC<InputProps> = ({ Text = 'Password', Value, OnCha
 
     return (
         <S.View className="mb-4">
-            <S.Text className='text-gray-700 dark:text-slate-200 text-medium font-pmedium mb-1.5'>{Text}</S.Text>
+            <S.Text className='text-gray-700 text-medium font-pmedium mb-1.5'>{Text}</S.Text>
             <S.View 
                 className={`w-full h-14 px-4 rounded-lg border-2 flex flex-row items-center 
-                    ${Errors ? 'border-red-500 bg-red-50 dark:border-red-400 dark:bg-slate-900' : 
-                      isFocused ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-slate-800' : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900'}`}
+                    ${Errors ? 'border-red-500 bg-red-50' : 
+                      isFocused ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'}`}
             >
                 <S.TextInput
-                    className="flex-1 text-gray-800 dark:text-slate-100 font-pregular text-base leading-5 h-full py-0 m-0"
+                    className="flex-1 text-gray-800 font-pregular text-base leading-5 h-full py-0 m-0"
                     style={{ textAlignVertical: 'center' }}
                     placeholderTextColor="#9CA3AF"
                     value={Value}
@@ -32,8 +32,6 @@ export const PasswordInput: SFC<InputProps> = ({ Text = 'Password', Value, OnCha
                 />
                 <S.TouchableOpacity 
                     onPress={toggleShowPassword} 
-                    accessibilityRole="button"
-                    accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
                     className="ml-2 p-2 -mr-2"
                     activeOpacity={0.7}
                 >
@@ -49,7 +47,7 @@ export const PasswordInput: SFC<InputProps> = ({ Text = 'Password', Value, OnCha
                     <S.View className="w-3 h-3 bg-red-500 rounded-full items-center justify-center mr-1.5">
                         <S.Text className="text-white text-xs font-pbold" style={{ fontSize: 8 }}>!</S.Text>
                     </S.View>
-                    <S.Text className="text-red-600 dark:text-red-400 text-xs font-pmedium flex-1">
+                    <S.Text className="text-red-600 text-xs font-pmedium flex-1">
                         {Errors}
                     </S.Text>
                 </S.View>

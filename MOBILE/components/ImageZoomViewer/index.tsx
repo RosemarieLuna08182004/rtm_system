@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet, Image, StatusBar, Platform } from 'react-native';
 import ImageViewing from 'react-native-image-viewing';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ImageZoomViewerProps {
   images: Array<{ uri: string }>;
@@ -15,6 +16,7 @@ const ImageZoomViewer: React.FC<ImageZoomViewerProps> = ({
 }) => {
   const [visible, setIsVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(imageIndex);
+  const insets = useSafeAreaInsets();
 
   // Preload images for faster loading
   useEffect(() => {
@@ -42,9 +44,6 @@ const ImageZoomViewer: React.FC<ImageZoomViewerProps> = ({
         activeOpacity={0.7} 
         onPress={() => openImageViewer(imageIndex)}
         style={styles.container}
-        accessibilityRole="imagebutton"
-        accessibilityLabel="Illustration"
-        accessibilityHint="Opens the image full screen"
       >
         {children}
       </TouchableOpacity>

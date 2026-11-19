@@ -5,7 +5,6 @@ import { LeftArrow } from "@/constants";
 import { Animated, ViewStyle, StyleSheet, View } from "react-native";
 import { SecondaryHeaderProps, SFC } from "@/types";
 import { BookmarkButton } from "@/components/FormInputs";
-import { useDisplayScale } from "@/utils/displayScale";
 
 interface ExtendedSecondaryHeaderProps extends SecondaryHeaderProps {
     style?: ViewStyle;
@@ -26,13 +25,8 @@ export const SecondaryHeader: SFC<ExtendedSecondaryHeaderProps> = ({
     const router = useRouter();
     const scrollY = useRef(new Animated.Value(0)).current;
 
-    // Taller when there's a subtitle, and grows with the display size so large text isn't clipped.
-    const displayScale = useDisplayScale();
-    const Header_Max_Height = useMemo(
-        () => Math.round((isTermLine || subtitle ? 70 : 50) * displayScale),
-        [isTermLine, subtitle, displayScale],
-    );
-    const Header_Min_Height = Math.round(45 * displayScale);
+    const Header_Max_Height = useMemo(() => (isTermLine ? 70 : 50), [isTermLine]);
+    const Header_Min_Height = 45;
     const Scroll_Distance = 25;
 
     const animatedHeaderHeight = useMemo(() => scrollY.interpolate({

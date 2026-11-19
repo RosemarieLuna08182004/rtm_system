@@ -24,4 +24,7 @@ export const UserQuery = {
     )
   `,
   q0013: `SELECT * FROM user WHERE Email = ?`,
+  // Role lookups for TokenHandler: only what the access checks need
+  q0014: "SELECT `Id`, `AccountType`, `Email` FROM `user` WHERE `Id` = ?",
+  q0015: "SELECT `Id`, `AccountType`, `Email` FROM `user` WHERE `Email` = ?",
 };

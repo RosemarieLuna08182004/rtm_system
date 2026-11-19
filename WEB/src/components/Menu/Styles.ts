@@ -1,6 +1,8 @@
 import styled from 'styled-components'
 import UIcon from '@mdi/react'
-import { colors } from '../../styles'
+
+// Inherit the colour from the parent button so the icon follows the text (white, or hover/active states).
 export const Icon = styled(UIcon)`
-    color:${colors.primary};
+    color: currentColor;
+    flex-shrink: 0;
 `

@@ -4,16 +4,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { changePassValidator } from '@/validators';
 import { SFC } from '@/types';
 import { PasswordInput, TouchableButton } from '@/components/FormInputs';
-import * as S from '@/styles';
+import * as S from '@/styles'
 import { useRouter } from "expo-router";
-import { Error, Success } from '@/shared';
+import { API } from '@/constants';
+import { Error, Success } from '@/shared'
 import { useAuth } from '@/hooks';
-import { authApi, userApi } from "@/services/api";
+import { useAxiosPrivate } from '@/hooks/useAxiosPrivate';
 
 export const ChangePassForm: SFC = ({ClassName}) => {
   const router = useRouter()
 	const { auth } = useAuth();
+	const axios = useAxiosPrivate();
 	const userId = auth?.user?.Id;
+	const userEmail = auth?.user?.Email;
 	const [errorMessage, setErrorMessage] = useState<string>('')
 	const [isSubmitting, setIsSubmitting] = useState(false);
   const { control, handleSubmit, setError, formState: { errors } } = useForm({
@@ -25,18 +28,18 @@ export const ChangePassForm: SFC = ({ClassName}) => {
     setErrorMessage(''); // Clear any previous error messages
     try {
       const { CurrentPass, NewPassword } = data;
-			await authApi.verifyPassword(CurrentPass)
-      const response = await userApi.update(userId, {Password: NewPassword, CurrentPassword: CurrentPass});
-      if(response.data) {
+			await axios.post(`${API}/auth/verify-password`, { Email: userEmail, Password: CurrentPass })
+      const response = await axios.patch(`${API}/user/update/${userId}`, {Password: NewPassword});
+      if(response.data.data) {
         setErrorMessage(Success.m0006);
         setTimeout(() => {
           router.back(); // Navigate after success message
         }, 1500);
       } else {
-        setErrorMessage(response.message);
+        setErrorMessage(response.data?.message);
       }
     } catch (error: any) {
-			if(error?.response?.data?.message == 'Password is incorrect') {
+			if(error.response.data.message == 'Password is incorrect') {
 				setError('CurrentPass',{type:'manual',message:error.response.data.message})
       } else {
         setErrorMessage(Error.m0007);
@@ -92,12 +95,12 @@ export const ChangePassForm: SFC = ({ClassName}) => {
         )}
       />
       { errorMessage && (
-        <S.View className={`${errorMessage === Success.m0006 ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'} border rounded-lg p-3 mb-4`}>
+        <S.View className={`${errorMessage === Success.m0006 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border rounded-lg p-3 mb-4`}>
           <S.View className="flex-row items-center">
             <S.View className={`w-5 h-5 ${errorMessage === Success.m0006 ? 'bg-green-500' : 'bg-red-500'} rounded-full items-center justify-center mr-2`}>
               <S.Text className="text-white text-xs font-pbold">{errorMessage === Success.m0006 ? '✓' : '!'}</S.Text>
             </S.View>
-            <S.Text className={`text-sm ${errorMessage === Success.m0006 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'} font-pmedium flex-1`}>{errorMessage}</S.Text>
+            <S.Text className={`text-sm ${errorMessage === Success.m0006 ? 'text-green-700' : 'text-red-700'} font-pmedium flex-1`}>{errorMessage}</S.Text>
           </S.View>
         </S.View>
       )}

@@ -1,3 +1,4 @@
+import { GenericFunction } from "../utils";
 
 export interface HeaderProps {
     tintColor?: string;

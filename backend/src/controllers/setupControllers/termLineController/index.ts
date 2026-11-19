@@ -1,16 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { API } from "../../../constants";
 import {
   termLineValidatorOnCreate,
   termLineValidatorOnUpdate,
 } from "../../../validators";
-import { TermLineModel } from "../../../models";
+import { DuplicateAlerts, TermLineModel } from "../../../models";
 import { Success, Error } from "../../../shared";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/term/line`)
 export default class TermLineController {
@@ -53,7 +51,7 @@ export default class TermLineController {
     }
   } // GET-ALL-BY-TERM
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await TermLineModel.remove(Id);
@@ -67,12 +65,13 @@ export default class TermLineController {
     }
   } // REMOVE
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(termLineValidatorOnCreate)
   async add(req: LoginRequest, res: Response, next: NextFunction) {
     try {
       const Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10), response = await TermLineModel.add(Data, CurrentId);
       if(!response.data) return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterSubTermSaved(Data, null, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch(error:any){
       logging.log("----------------------------------------");
@@ -82,12 +81,14 @@ export default class TermLineController {
     }
   }
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(termLineValidatorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) {
     try {
-      const Id = parseInt(req.params.Id, 10), Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10), response = await TermLineModel.update(Id, Data, CurrentId);
+      const Id = parseInt(req.params.Id, 10), Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10);
+      const before = await DuplicateAlerts.subTermSnapshot(Id), response = await TermLineModel.update(Id, Data, CurrentId);
       if(!response.data) return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterSubTermSaved(Data, before, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch(error:any){
       logging.log("----------------------------------------");

@@ -5,7 +5,6 @@ export const termInitial : TermTable = {
     Term: null,
     Focus: null,
     Definition: null,
-    VoiceOver: null,
     Illustration: null
 }
 

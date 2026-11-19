@@ -7,11 +7,9 @@ export const AnimatedSearch: SFC<AnimatedSearchProps> = ({ value, onChangeText }
   return (
     <S.View className="relative w-full">
       <S.TextInput
-        className="h-12 border-blue-500 border-2 px-4 pr-12 rounded-xl w-full font-pregular bg-white dark:bg-slate-900"
+        className="h-12 border-blue-500 border-2 px-4 pr-12 rounded-xl w-full font-pregular bg-white"
         style={{ textAlignVertical: 'center' }}
         placeholder="Search..."
-        accessibilityLabel="Search"
-        returnKeyType="search"
         placeholderTextColor="#9CA3AF"
         value={value}
         onChangeText={onChangeText}

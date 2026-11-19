@@ -30,7 +30,7 @@ const TermButtonComponent: SFC<TermButtonProps> = ({
   return (
     <S.TouchableOpacity onPress={OnPress} disabled={Disabled} activeOpacity={0.8} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
       <S.View className={`${ClassName} w-full rounded-xl mb-2 ${status.BgColor} overflow-hidden`}>
-        <S.View className="flex flex-row min-h-12 py-1 justify-start items-center">
+        <S.View className="flex flex-row h-12 justify-start items-center">
           <S.View className="flex-1 h-full flex items-start justify-center ml-5">
             <S.Text className={`${status.TextColor} text-medium font-psemibold`} numberOfLines={1} style={{ fontFamily: 'Poppins_600SemiBold' }}>
               {highlightedText}

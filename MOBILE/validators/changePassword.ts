@@ -1,14 +1,14 @@
 import * as yup from 'yup';
-import { PASSWORD_MIN_LENGTH } from './signUp';
 
 export const changePassValidator = yup.object().shape({
   CurrentPass: yup.string()
-    .required('Current Password is required'),
+    .required('Current Password is required')
+    .min(6, 'Password must be at least 6 characters long'),
   NewPassword: yup.string()
     .required('New Password is required')
-    .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`)
-    .notOneOf([yup.ref('CurrentPass')], 'New password must be different from the current password'),
+    .min(6, 'Password must be at least 6 characters long'),
   ConfirmPassword: yup.string()
     .required('Confirm password is required')
-    .oneOf([yup.ref('NewPassword')], 'Passwords must match'),
+    .oneOf([yup.ref('NewPassword'), null], 'Passwords must match')
+    .min(6, 'Password must be at least 6 characters long'),
 });

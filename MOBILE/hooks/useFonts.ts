@@ -1,5 +1,4 @@
 import * as Font from 'expo-font';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Poppins_100Thin,
   Poppins_100Thin_Italic,
@@ -22,9 +21,7 @@ import {
 } from '@expo-google-fonts/poppins';
 
 export const useAppFonts = () => {
-  const [fontsLoaded, fontError] = Font.useFonts({
-    // Icons load with the text fonts, so they never pop in after the screen appears.
-    ...MaterialCommunityIcons.font,
+  const [fontsLoaded] = Font.useFonts({
     Poppins_100Thin,
     Poppins_100Thin_Italic,
     Poppins_200ExtraLight,
@@ -45,6 +42,5 @@ export const useAppFonts = () => {
     Poppins_900Black_Italic,
   });
 
-  // If a font fails to load, carry on with the system font rather than staying on the splash screen.
-  return fontsLoaded || !!fontError;
+  return fontsLoaded;
 };

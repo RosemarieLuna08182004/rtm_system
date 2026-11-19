@@ -6,12 +6,12 @@ export function loggingHandler(
   next: NextFunction,
 ) {
   logging.info(
-    `Incomming - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`,
+    `Incomming - METHOD: [${req.method}] - URL: [${req.path}] - IP: [${req.socket.remoteAddress}]`,
   );
 
   res.on("finish", () => {
     logging.info(
-      `Result - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}] - STATUS: [${res.statusCode}]`,
+      `Result - METHOD: [${req.method}] - URL: [${req.path}] - IP: [${req.socket.remoteAddress}] - STATUS: [${res.statusCode}]`,
     );
   });
 

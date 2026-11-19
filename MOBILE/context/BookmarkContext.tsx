@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 interface BookmarkState {
   [key: string]: boolean; // key format: "termId_userId" -> bookmark status
@@ -52,14 +51,6 @@ export const BookmarkProvider: React.FC<BookmarkProviderProps> = ({ children }) 
   const clearBookmarkState = useCallback(() => {
     setBookmarkState({});
   }, []);
-
-  // A new or ended session must not see the previous user's bookmark state.
-  const { auth } = useAuth();
-  const userId = auth?.user?.Id ?? 0;
-  useEffect(() => {
-    setBookmarkState({});
-    setLastChangeType(null);
-  }, [userId, auth?.accessToken ? 1 : 0]);
 
   const value: BookmarkContextType = {
     bookmarkState,

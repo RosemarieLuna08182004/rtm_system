@@ -18,6 +18,3 @@ web-build/
 
 expo-env.d.ts
 # @end expo-cli
-# local env files (API address for testing)
-.env
-.env*.local

@@ -4,12 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { signInValidator } from '@/validators';
 import { SFC } from '@/types';
 import { CustomInput, PasswordInput, TouchableButton } from '@/components/FormInputs';
-import * as S from '@/styles';
+import { ActivityIndicator } from '@/components';
+import * as S from '@/styles'
 import { useRouter } from "expo-router";
-import { RoutesChannel } from '@/constants';
+import { API, RoutesChannel } from '@/constants';
 import { useAuth } from '@/hooks';
-import { authApi } from "@/services/api";
-import { errorMessageFrom } from "@/utils/errors";
+import axios from 'axios';
 
 export const SingInForm: SFC = ({ClassName}) => {
   const router = useRouter()
@@ -21,14 +21,14 @@ export const SingInForm: SFC = ({ClassName}) => {
     try {
       setIsLoading(true)
       setErrorMessage('')
-      const response = await authApi.login(String(data.Email ?? '').trim().toLowerCase(), data.Password)
-      if (response.data) {
-        const { user, accessToken, refreshToken } = response.data;
-        setAuth({ user, accessToken, roles: user?.AccountType ? [user.AccountType as any] : [], refreshToken });
+      const response = await axios.post(`${API}/auth/login`, data)
+      if (response.data.data) {
+        const { user, accessToken, refreshToken, AccountType } = response.data.data;
+        setAuth({ user, accessToken, roles: AccountType, refreshToken });
         router.replace(RoutesChannel.HOME);
-      } else setErrorMessage(response.message)
+      } else setErrorMessage(response.data.message)
     } catch (error: any) {
-      setErrorMessage(errorMessageFrom(error));
+      setErrorMessage(error.response.data.message);
     } finally {
       setIsLoading(false)
     }
@@ -37,10 +37,10 @@ export const SingInForm: SFC = ({ClassName}) => {
   return (
     <S.View className={ClassName}>
       { errorMessage && (
-        <S.View className='w-full mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg'>
+        <S.View className='w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg'>
           <S.View className='flex-row items-center'>
             <S.Text className='text-red-600 font-pregular mr-2'>⚠️</S.Text>
-            <S.Text className='text-sm text-red-700 dark:text-red-300 font-pregular flex-1'>{errorMessage}</S.Text>
+            <S.Text className='text-sm text-red-700 font-pregular flex-1'>{errorMessage}</S.Text>
           </S.View>
         </S.View>
       )}
@@ -55,11 +55,6 @@ export const SingInForm: SFC = ({ClassName}) => {
             Value={value} OnChange={onChange} 
             OnBlur={onBlur} 
             Errors={errors.Email?.message}
-            KeyboardType="email-address"
-            AutoCapitalize="none"
-            AutoCorrect={false}
-            AutoComplete="email"
-            TextContentType="emailAddress"
           />
         )}
       />
@@ -78,7 +73,7 @@ export const SingInForm: SFC = ({ClassName}) => {
         )}
       />
       <S.View>
-        <S.Text className='text-sm font-pregular text-slate-500 dark:text-slate-400' onPress={()=>router.push(RoutesChannel.FORGOT_PASSWORD)}>Forgot password?</S.Text>
+        <S.Text className='text-sm font-pregular text-slate-500' onPress={()=>router.push(RoutesChannel.FORGOT_PASSWORD)}>Forgot password?</S.Text>
       </S.View>
       <TouchableButton 
         ClassName="mt-3 mb-2" 

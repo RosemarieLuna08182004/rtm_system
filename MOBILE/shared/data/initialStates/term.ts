@@ -1,4 +1,4 @@
-import { TermTable } from "@/types";
+import { TermsState, TermTable } from "@/types";
 
 export const TermTableInitial: TermTable = {
     ChapterId: 0,
@@ -6,4 +6,12 @@ export const TermTableInitial: TermTable = {
     Focus: "",
     Definition: ""
 }
+
+export const termInitial: TermsState = {
+    terms: [],
+    status: 'idle',
+    error: null,
+    term: TermTableInitial,
+    termStatus: "idle"
+};
 

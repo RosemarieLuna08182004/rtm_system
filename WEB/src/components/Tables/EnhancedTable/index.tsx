@@ -15,7 +15,7 @@ import { CircleButton } from '../../FormInputs';
 import { colors } from '../../../styles';
 import { Skeleton } from '../../Skeleton';
 
-export const EnhancedTable = <T extends Record<string, any>>({ Rows, HeadCells,  ClassName, OnRecordDelete, Title = 'NA', RemoveTable= DBTable.DEFAULT, IsRemove = true, IsLoading = false}: EnhancedTableProps<T>) => {
+export const EnhancedTable = <T extends Record<string, any>>({ Rows, HeadCells,  ClassName, OnRecordDelete, Title = 'NA', Description, RemoveTable= DBTable.DEFAULT, IsRemove = true, IsLoading = false}: EnhancedTableProps<T>) => {
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof T>(HeadCells[0].Id)
   const [page, setPage] = useState(0);
@@ -109,7 +109,7 @@ export const EnhancedTable = <T extends Record<string, any>>({ Rows, HeadCells, 
   return (
     <>
       <S.Container className={twMerge('w-full h-full overflow-auto ', ClassName)}>
-        <TableToolbar Title={Title}>
+        <TableToolbar Title={Title} Description={Description} Count={IsLoading ? undefined : filteredRows.length} Total={Rows.length}>
           <TextField sx={{width: { xs: '100%', sm: '100%', md: '400px' }}} label="Search" id="Search" size="small" name="filter" value={searchQuery} onChange={handleSearchChange} placeholder={'Search'}/>
         </TableToolbar>
         <TableContainer sx={{borderBottom:`1px solid ${colors.palette.neutral['100']}`}}>
@@ -137,8 +137,8 @@ export const EnhancedTable = <T extends Record<string, any>>({ Rows, HeadCells, 
                       switch (HeadCell.Id) {
                         case 'DateCreated':
                           return formatDateToMMDDYY(row[HeadCell.Id].toString());
-                        case 'Coins':
                         case 'Price':
+                        case 'TotalAmount':
                             return Number(row[HeadCell.Id]??0).toFixed(2);
                         case 'Id':
                           return IsRemove && (

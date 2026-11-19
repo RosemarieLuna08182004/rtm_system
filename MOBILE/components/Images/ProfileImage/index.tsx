@@ -1,13 +1,14 @@
 import React from 'react';
-import {
-Image as RNImage,
-View,
-TouchableOpacity,
-Modal,
-StyleProp,
-ViewStyle,
-ImageStyle,
-ImageSourcePropType
+import { 
+  Image as RNImage, 
+  View, 
+  TouchableOpacity, 
+  Modal, 
+  StyleProp, 
+  ViewStyle, 
+  ImageStyle, 
+  ImageSourcePropType,
+  ImageURISource
 } from 'react-native';
 import * as S from '@/styles';
 import { ProfilePictureProps, SFC } from '@/types';
@@ -72,9 +73,6 @@ export const ProfilePicture: SFC<ProfilePictureProps> = ({
         onPress={handlePress}
         style={containerStyle}
         activeOpacity={0.8}
-        accessibilityRole="imagebutton"
-        accessibilityLabel="Profile picture"
-        accessibilityHint={onPress ? "Opens edit profile" : undefined}
       >
         <RNImage 
           source={imageSource} 

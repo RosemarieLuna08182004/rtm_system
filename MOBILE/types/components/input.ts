@@ -1,5 +1,5 @@
 import { GenericFunction } from "../utils"
-import { KeyboardTypeOptions, ReturnKeyTypeOptions, TextInputProps } from "react-native"
+import { KeyboardTypeOptions, ReturnKeyTypeOptions } from "react-native"
 
 export interface InputProps {
     Text:string
@@ -11,7 +11,7 @@ export interface InputProps {
     KeyboardType?: KeyboardTypeOptions
     AutoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
     AutoCorrect?: boolean
-    AutoComplete?: TextInputProps['autoComplete']
-    TextContentType?: TextInputProps['textContentType']
+    AutoComplete?: string
+    TextContentType?: string
     ReturnKeyType?: ReturnKeyTypeOptions
 }

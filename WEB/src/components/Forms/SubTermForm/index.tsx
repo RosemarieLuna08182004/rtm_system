@@ -1,8 +1,9 @@
 import { ButtonType, FormProps, SFC, TermLineTable, ToastType } from "../../../types";
+import { UnsavedChangesGuard } from "../../../context";
 import * as S from '../../../styles'
 import { twMerge } from "tailwind-merge";
 import { Form, Formik } from "formik";
-import { CustomButton, Input, SelectInput, Skeleton, TextEditor } from "../..";
+import { CustomButton, Input, SelectInput, Skeleton, TextEditor, SectionHeader } from "../..";
 import { subtermValidator } from "../../../validators";
 import SaveIcon from '@mui/icons-material/Save';
 import { displayToast } from "../../../utils";
@@ -14,7 +15,7 @@ import { TermLine, positionOpt } from "../../../shared";
 import ReactQuill from "react-quill";
 import { useRef } from "react";
 
-export const SubTermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = false, IsDetails=true }) => {
+export const SubTermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', Description, IsEdit = false, IsDetails=true, OnSaved }) => {
     const { Id } = useParams<{ Id?: string }>()
 
     const { records, loading } = useGetTermLine(parseInt(`${Id || 0}`, 10))
@@ -38,7 +39,7 @@ export const SubTermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = 
     }
     
     const termlineInitial: TermLineTable = {
-        TermId: Number(Id) ?? 0,
+        TermId: Number(Id) || 0,
         CategoryId: 0,
         Term: null,
         Description: null,
@@ -51,10 +52,9 @@ export const SubTermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = 
     
     const handleSubmit = async (values: TermLine) => {
         try {
-            if ((Id) && IsDetails) await update(Id, values)
+            if ((Id) && IsDetails) { if (await update(Id, values)) OnSaved?.() }
             else await add(values)
         } catch (error: any) {
-            console.log(error)
             displayToast(error?.response?.data?.message || error.message, ToastType.error)
         }
     }
@@ -63,13 +63,15 @@ export const SubTermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', IsEdit = 
         <>
             <S.Container className={twMerge(' w-full py-3 ', ClassName)}>
                 <S.Divider className=" mb-4">
-                    <S.Span className="text-xl text-slate-600">{Title}</S.Span>
+                    <SectionHeader Title={Title} Description={Description} />
                 </S.Divider>
                 <S.Content>
                     {!flag?
                     <Formik initialValues={optionalInitial} onSubmit={handleSubmit} enableReinitialize={true} validateOnMount={true} validationSchema={subtermValidator}>
                         {({ errors, touched, isValid, isSubmitting, handleChange, values, dirty, setFieldValue, setTouched }) => (
                             <Form>
+                                {/* Warn before leaving with unsaved changes (not while a save is in progress) */}
+                                <UnsavedChangesGuard When={dirty && !isSubmitting} />
                                 <S.Divider className="flex flex-col w-full ml-1">
                                     <S.Divider className="w-full flex flex-col md:flex-row gap-2">
                                         <S.Divider className="w-full md:w-1/2 flex flex-col">

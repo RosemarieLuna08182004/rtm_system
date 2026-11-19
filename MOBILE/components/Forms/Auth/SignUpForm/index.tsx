@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
+import { Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
 
 import { singUpValidator } from '@/validators';
-import { SFC, ToastType } from '@/types';
-import { CustomInput, PasswordInput, TouchableButton } from '@/components/FormInputs';
+import { AlertType, SFC, ToastType } from '@/types';
+import { CountryPicker, CustomInput, PasswordInput, TouchableButton } from '@/components/FormInputs';
+import { deviceCountry } from '@/shared/data/countries';
+import { ActivityIndicator } from '@/components';
 import * as S from '@/styles';
-import { RoutesChannel } from '@/constants';
-import { showMessage } from '@/shared';
+import { API, RoutesChannel } from '@/constants';
+import { Error, showMessage, Success } from '@/shared';
 import { useAuth } from '@/hooks';
-import { authApi } from "@/services/api";
-import { errorMessageFrom } from "@/utils/errors";
+import { getItem, setItem } from '@/utils/asyncStorage';
 
 export const SignUpForm: SFC = ({ClassName}) => {
   const router = useRouter();
@@ -19,30 +22,45 @@ export const SignUpForm: SFC = ({ClassName}) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { control, handleSubmit, formState: { errors } } = useForm({
-    resolver: yupResolver(singUpValidator)
+    resolver: yupResolver(singUpValidator),
+    // Pre-filled from the phone's region; the user can change it
+    defaultValues: { Country: deviceCountry() ?? undefined },
   });
 
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
       setErrorMessage(''); // Clear previous errors
-      const Email = String(data.Email ?? '').trim().toLowerCase();
-      const response = await authApi.register({ Name: String(data.Name ?? '').trim(), Email, Password: data.Password });
+      const dataToSend = {...data};
+      dataToSend.AccountType = 'user';
+      
+      const response = await axios.post(`${API}/user/add`, dataToSend);
       
       if (response.data) {
         // Auto-login after successful sign-up
-        const loginResponse = await authApi.login(Email, data.Password);
+        const loginResponse = await axios.post(`${API}/auth/login`, {
+          Email: data.Email,
+          Password: data.Password
+        });
 
-        if (loginResponse.data) {
-          const { user, accessToken, refreshToken } = loginResponse.data;
+        if (loginResponse.data.data) {
+          const { user, accessToken, refreshToken, AccountType } = loginResponse.data.data;
           
-          // AuthProvider persists the session (tokens go to secure storage).
-          setAuth({
+          // Save auth data to context and storage
+          setAuth({ 
+            user, 
+            accessToken, 
+            roles: AccountType, 
+            refreshToken 
+          });
+          
+          // Save tokens to storage
+          await setItem('auth', JSON.stringify({
             user,
             accessToken,
-            roles: user?.AccountType ? [user.AccountType as any] : [],
-            refreshToken
-          });
+            refreshToken,
+            roles: AccountType
+          }));
           
           // Redirect to home/dashboard
           router.replace(RoutesChannel.HOME);
@@ -52,12 +70,12 @@ export const SignUpForm: SFC = ({ClassName}) => {
           router.replace(RoutesChannel.SIGN_IN);
         }
       } else {
-        const errorMsg = response.message || 'Failed to create account. Please try again.';
+        const errorMsg = response.data?.message || 'Failed to create account. Please try again.';
         setErrorMessage(errorMsg);
         showMessage(errorMsg, ToastType.error);
       }
     } catch (error: any) {
-      const errorMsg = errorMessageFrom(error);
+      const errorMsg = error?.response?.data?.message || 'An error occurred. Please try again.';
       setErrorMessage(errorMsg);
       showMessage(errorMsg, ToastType.error);
     } finally {
@@ -108,6 +126,19 @@ export const SignUpForm: SFC = ({ClassName}) => {
         )}
       />
       <Controller
+        name="Country"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <CountryPicker
+            ClassName="mb-3"
+            Text="Country"
+            Value={value}
+            OnChange={onChange}
+            Errors={errors.Country?.message}
+          />
+        )}
+      />
+      <Controller
         name="Password"
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -122,10 +153,10 @@ export const SignUpForm: SFC = ({ClassName}) => {
         )}
       />
       { errorMessage && (
-        <S.View className='w-full mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg'>
+        <S.View className='w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg'>
           <S.View className='flex-row items-center'>
             <S.Text className='text-red-600 font-pregular mr-2'>⚠️</S.Text>
-            <S.Text className='text-sm text-red-700 dark:text-red-300 font-pregular flex-1'>{errorMessage}</S.Text>
+            <S.Text className='text-sm text-red-700 font-pregular flex-1'>{errorMessage}</S.Text>
           </S.View>
         </S.View>
       )}

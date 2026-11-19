@@ -1,7 +1,7 @@
 
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { CategoryModel } from "../../../models";
 import { API } from "../../../constants";
 import { Error } from "../../../shared";
@@ -9,9 +9,7 @@ import {
   categoryValidateorOnCreate,
   categoryValidateorOnUpdate,
 } from "../../../validators";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/category`)
 export default class CategoryController {
@@ -41,7 +39,7 @@ export default class CategoryController {
     }
   } // END GET-ALL
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(req: Request, res: Response, next: NextFunction) : Promise<Response>{
     try {
       const Id = parseInt(req.params.Id, 10), response = await CategoryModel.remove(Id)
@@ -55,7 +53,7 @@ export default class CategoryController {
     }
   } // END REMOVE
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(categoryValidateorOnCreate)
   async add(req: LoginRequest, res: Response, next: NextFunction): Promise<Response> {
     try {
@@ -70,7 +68,7 @@ export default class CategoryController {
     }
   } // END ADD
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(categoryValidateorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) : Promise<Response> {
     try {

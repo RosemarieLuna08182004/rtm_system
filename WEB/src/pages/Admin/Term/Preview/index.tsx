@@ -28,7 +28,7 @@ export const AdminTermPreviewPage : SFC = ({ClassName}) => {
             </S.PageTopBar>
             <S.Content className="flex mb-2 flex-col w-full  rounded-md text-zinc-800 flex items-center py-1 overflow-auto ">
                 <Suspense fallback={<Skeleton />}>
-                    <TermCard Illustration={records.Illustration??""} VoiceOver={records.VoiceOver??""} Refetch={refetch} ChapterTitle={records.ChapterTitle ?? ''} TermId={Number(Id || 0)} TermTitle={records.Term ?? ""} Definition={records.Definition ?? ""} Focus={records.Focus??""} />
+                    <TermCard Illustration={records.Illustration??""} Refetch={refetch} ChapterTitle={records.ChapterTitle ?? ''} TermId={Number(Id || 0)} TermTitle={records.Term ?? ""} Definition={records.Definition ?? ""} Focus={records.Focus??""} />
                 </Suspense>
             </S.Content> 
         </S.Container> 

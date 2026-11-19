@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { API } from "../../../constants";
 import {
   termValidatorOnCreate,
   termValidatorOnUpdate,
+  importRowsValidator,
 } from "../../../validators";
 import { Success, Error } from "../../../shared";
-import { TermModel } from "../../../models";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { DuplicateAlerts, TermModel } from "../../../models";
+import { checkImportScript } from "../../../functions";
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/term`)
 export default class TermController {
@@ -61,7 +61,7 @@ export default class TermController {
     }
   } // GET-ALL-BY-CHAPTER
 
-  @Route("get", "/get-all/:Id/:UserId", TokenHandler.verifyToken, requireSelf("UserId"))
+  @Route("get", "/get-all/:Id/:UserId", TokenHandler.verifyToken)
   async getAllByChapterUser(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10),
@@ -81,7 +81,7 @@ export default class TermController {
     }
   } // GET-ALL-BY-CHAPTER
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10),
@@ -97,7 +97,7 @@ export default class TermController {
     }
   } // REMOVE
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   // model here
   @Validate(termValidatorOnCreate)
   async add(req: LoginRequest, res: Response, next: NextFunction) {
@@ -107,6 +107,7 @@ export default class TermController {
         response = await TermModel.add(Data, CurrentId);
       if (!response.data)
         return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterTermSaved(Data, null, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch (error: any) {
       logging.log("----------------------------------------");
@@ -116,18 +117,27 @@ export default class TermController {
     }
   }
 
-  @Route("post", "/import-data/", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  @Route("post", "/import-data/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async importData(req: LoginRequest, res: Response, next: NextFunction) {
     try {
       const Data = req.body,
         CurrentId = parseInt(`${req.User?.Id}`, 10);
-      const Query: string = String(Data.Query).toLowerCase();
-      if (Query.includes("delete from") || Query.includes("delete"))
-        return res.status(401).json({ data: false, message: Error.m032 });
+      // Runs as raw SQL, so only a single plain INSERT into term/termline is accepted
+      const check = checkImportScript(String(Data.Query ?? ""));
+      if ("reason" in check)
+        return res.status(400).json({ data: false, message: `${Error.m036} ${check.reason}.` });
+      const before = await DuplicateAlerts.importSnapshot();
       const response = await TermModel.imports(Data.Query, CurrentId);
       if (!response.data)
         return res.status(401).json({ data: false, message: response.message });
-      return res.status(200).json({ data: true, message: response.message });
+      await DuplicateAlerts.afterImport(before, CurrentId); // never throws
+      const what = check.table === "term" ? "term" : "sub term";
+      return res.status(200).json({
+        data: true,
+        rows: check.rows,
+        table: check.table,
+        message: `Imported ${check.rows} ${what}${check.rows === 1 ? "" : "s"}.`,
+      });
     } catch (error: any) {
       logging.log("----------------------------------------");
       logging.error("Term-Controller [import-data]:", error.message);
@@ -136,7 +146,36 @@ export default class TermController {
     }
   }
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(...STAFF_ROLES))
+  /**
+   * Spreadsheet (Excel / CSV) import. Rows name their volume, term and category.
+   * DryRun: true only reports what would happen, for the preview.
+   */
+  @Route("post", "/import-rows/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
+  async importRows(req: LoginRequest, res: Response, next: NextFunction) {
+    try {
+      const CurrentId = parseInt(`${req.User?.Id}`, 10);
+      const { value, error } = importRowsValidator.validate(req.body ?? {});
+      if (error) return res.status(400).json({ data: false, message: error.details[0]?.message ?? error.message });
+      const before = value.DryRun ? null : await DuplicateAlerts.importSnapshot();
+      const response = await TermModel.importRows(value.Terms, value.SubTerms, value.DryRun, CurrentId);
+      if (response.saved) await DuplicateAlerts.afterImport(before, CurrentId); // never throws
+      const { termsAdded, subTermsAdded, skipped, problems } = response.summary;
+      const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+      const message = value.DryRun
+        ? "Preview ready."
+        : response.saved
+          ? `Imported ${plural(termsAdded, "term")} and ${plural(subTermsAdded, "sub term")}.${skipped ? ` Skipped ${skipped}.` : ""}${problems ? ` ${plural(problems, "row")} with problems not imported.` : ""}`
+          : "Nothing new to import.";
+      return res.status(200).json({ data: { ...response }, message });
+    } catch (error: any) {
+      logging.log("----------------------------------------");
+      logging.error("Term-Controller [import-rows]:", error.message);
+      logging.log("----------------------------------------");
+      return res.status(500).json({ data: false, message: "The import failed and nothing was saved. Please try again." });
+    }
+  }
+
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   // model here
   @Validate(termValidatorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) {
@@ -144,9 +183,11 @@ export default class TermController {
       const Id = parseInt(req.params.Id, 10),
         Data = req.body,
         CurrentId = parseInt(`${req.User?.Id}`, 10),
+        before = await DuplicateAlerts.termSnapshot(Id),
         response = await TermModel.update(Id, Data, CurrentId);
       if (!response.data)
         return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterTermSaved(Data, before, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch (error: any) {
       logging.log("----------------------------------------");

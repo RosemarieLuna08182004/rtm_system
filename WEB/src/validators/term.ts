@@ -7,7 +7,6 @@ export const termValidator = () => {
         Focus: yup.string().nullable().optional(),
         Definition: yup.string().nullable().optional(),
         Illustration: yup.string().nullable().optional(),
-        VoiceOver: yup.string().nullable().optional(),
     });
 };
 

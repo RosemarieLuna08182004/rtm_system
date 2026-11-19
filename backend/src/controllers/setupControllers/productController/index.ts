@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { API } from "../../../constants";
 import {
   productValidatorOnCreate,
@@ -8,13 +8,11 @@ import {
 } from "../../../validators";
 import { ProductModel } from "../../../models";
 import { Success, Error } from "../../../shared";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/product`)
 export default class ProductController {
-  @Route("get", "/get/:Id", TokenHandler.verifyToken)
+  @Route("get", "/get/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await ProductModel.get(Id);
@@ -27,7 +25,7 @@ export default class ProductController {
     }
   }
 
-  @Route("get", "/get-all/", TokenHandler.verifyToken)
+  @Route("get", "/get-all/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await ProductModel.getAll();
@@ -40,7 +38,7 @@ export default class ProductController {
     }
   }
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await ProductModel.remove(Id);
@@ -54,7 +52,7 @@ export default class ProductController {
     }
   }
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(productValidatorOnCreate)
   async add(req: LoginRequest, res: Response, next: NextFunction) {
     try {
@@ -69,7 +67,7 @@ export default class ProductController {
     }
   }
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(productValidatorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) {
     try {

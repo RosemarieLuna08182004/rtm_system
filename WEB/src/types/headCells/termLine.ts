@@ -6,7 +6,7 @@ export const termLineHC: HeadCell<TermLineTable>[] = [
         Id: 'TermName',
         numeric: false,
         disablePadding: true,
-        label: 'Focus',
+        label: 'Term', // the parent term this sub term belongs to
     },
     {
         Id: 'Category',
@@ -18,7 +18,7 @@ export const termLineHC: HeadCell<TermLineTable>[] = [
         Id: 'Term',
         numeric: false,
         disablePadding: true,
-        label: 'Term',
+        label: 'Sub Term', // the sub term's own title (often empty, e.g. for brief definitions)
     },
     {
         Id: 'DateCreated',

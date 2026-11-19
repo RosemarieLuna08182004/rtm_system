@@ -4,8 +4,8 @@ import { BookmarkIcon, BookmarkOutlineIcon, PlayButtonIcon } from "@/constants";
 
 export const renderStatus = (Status: TermStatus | string, isChapter: boolean) => {
     const defaultColors = {
-        BgColor: 'bg-gray-300 dark:bg-slate-800',
-        TextColor: 'text-slate-500 dark:text-slate-400',
+        BgColor: 'bg-gray-300',
+        TextColor: 'text-slate-500',
         IconColor: colors.palette.neutral['300'],
         Icon: BookmarkOutlineIcon,
     };

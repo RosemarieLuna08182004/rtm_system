@@ -28,28 +28,7 @@
         "foregroundImage": "./assets/icons/NewIcons/Roots_and_Morphology_Icon.png"
       }
     },
-    "plugins": [
-      [
-        "react-native-android-widget",
-        {
-          "widgets": [
-            {
-              "name": "TermOfTheDay",
-              "label": "Term of the day",
-              "description": "Today's term with its word parts, your streak, progress and recent terms. Resize it to show more.",
-              "minWidth": "110dp",
-              "minHeight": "40dp",
-              "targetCellWidth": 4,
-              "targetCellHeight": 2,
-              "maxResizeWidth": "720dp",
-              "maxResizeHeight": "720dp",
-              "resizeMode": "horizontal|vertical",
-              "updatePeriodMillis": 1800000
-            }
-          ]
-        }
-      ]
-    ],
+    "plugins": [],
     "experiments": {
       "typedRoutes": false
     },
@@ -58,9 +37,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "dd4ea334-bf66-442f-a795-082fb00c45eb"
+        "projectId": "c949487f-1968-4ff9-b36b-a7c4502a473c"
       }
     },
-    "owner": "rosielunas-team"
+    "owner": "splurridge"
   }
 }

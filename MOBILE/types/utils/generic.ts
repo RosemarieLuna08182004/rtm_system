@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import { ChannelAPI as API } from '../store'
 
 export type GenericFunction = GenericFunctionConstructor<any>
 

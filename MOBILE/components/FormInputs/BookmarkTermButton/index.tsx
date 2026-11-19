@@ -2,14 +2,13 @@ import { SFC, TermButtonProps, TermStatus } from "@/types";
 import React, { useMemo, useCallback, useState, memo } from "react";
 import { renderStatus } from "@/utils";
 import * as S from '@/styles';
-import { BookmarkIcon } from '@/constants';
+import { BookmarkIcon, BookmarkOutlineIcon } from '@/constants';
 import { useAuth } from "@/hooks";
+import { API } from "@/constants";
 import { useAxiosPrivate } from "@/hooks/useAxiosPrivate";
 import { Alert, ActivityIndicator, GestureResponderEvent } from "react-native";
-import { ErrorTitle } from "@/shared";
+import { ErrorTitle, Error } from "@/shared";
 import { useBookmarkContext } from "@/context";
-import { bookmarkApi } from "@/services/api";
-import { errorMessageFrom } from "@/utils/errors";
 
 const BookmarkTermButtonComponent: SFC<TermButtonProps> = ({ 
   ClassName, 
@@ -44,7 +43,9 @@ const BookmarkTermButtonComponent: SFC<TermButtonProps> = ({
     try {
       // Process API call first, then update UI on success
       if (data?.UserTermsId && data.UserTermsId !== 0) {
-        await bookmarkApi.setStatus(data.UserTermsId, false);
+        // Use the same API call as the working BookmarkButton
+        const statusPayload = { Status: 0 }; // 0 = unbookmark
+        await axios.patch(`${API}/user/term/unbookmark/${data.UserTermsId}`, statusPayload);
         
         // Update global bookmark context to sync with other screens
         if (data?.TermId && UserId) {
@@ -56,7 +57,7 @@ const BookmarkTermButtonComponent: SFC<TermButtonProps> = ({
         OnUnbookmark();
       }
     } catch (error: any) {
-      const errorMessage = errorMessageFrom(error);
+      const errorMessage = error.response?.data?.message || Error.m0001;
       Alert.alert(ErrorTitle.m0001, errorMessage);
     } finally {
       setIsUnbookmarking(false);
@@ -66,7 +67,7 @@ const BookmarkTermButtonComponent: SFC<TermButtonProps> = ({
   return (
     <S.TouchableOpacity onPress={OnPress} disabled={Disabled || isUnbookmarking} activeOpacity={0.8} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
       <S.View className={`${ClassName} w-full rounded-xl mb-2 ${status.BgColor} overflow-hidden`}>
-        <S.View className="flex flex-row min-h-12 py-1 justify-start items-center">
+        <S.View className="flex flex-row h-12 justify-start items-center">
           <S.View className="flex-1 h-full flex items-start justify-center ml-5">
             <S.Text className={`${status.TextColor} text-medium font-psemibold`} numberOfLines={1} style={{ fontFamily: 'Poppins_600SemiBold' }}>
               {displayText}
@@ -78,9 +79,6 @@ const BookmarkTermButtonComponent: SFC<TermButtonProps> = ({
             className="w-3/12 flex justify-center items-end h-12 pr-3"
             onPress={handleUnbookmark}
             disabled={Disabled || isUnbookmarking}
-            accessibilityRole="button"
-            accessibilityLabel={`Remove bookmark: ${displayText}`}
-            accessibilityState={{ busy: isUnbookmarking }}
           >
             <S.View className="flex flex-row justify-end items-center">
               {isUnbookmarking ? (

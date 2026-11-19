@@ -6,6 +6,7 @@ export interface AuthType {
   roles: Array<Roles>;
   accessToken: string;
   refreshToken: string;
+  googleProvider?: string;
 }
 
 export interface AuthContextType {
@@ -13,8 +14,6 @@ export interface AuthContextType {
   setAuth: React.Dispatch<React.SetStateAction<AuthType>>;
   persist: boolean;
   setPersist: React.Dispatch<React.SetStateAction<boolean>>;
-  // True once the saved session has been read from storage.
-  initialized: boolean;
   clearAuth?: any
 }
 export interface RequireAuthProps {

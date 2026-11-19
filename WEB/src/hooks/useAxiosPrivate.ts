@@ -39,7 +39,7 @@ export const useAxiosPrivate = () => {
                         // If refresh fails, clear auth state and redirect to login
                         console.error("Session expired. Please log in again.");
                         setAuth({} as AuthState);
-                        window.location.href = '/login';
+                        window.location.href = '/'; // the sign-in page
                         return Promise.reject(refreshError);
                     }
                 }

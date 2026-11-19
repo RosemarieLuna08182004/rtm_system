@@ -20,6 +20,7 @@ import SearchIcon from  '../assets/icons/search.png'
 import SettingsIcon from  '../assets/icons/settings.png'
 import VisibilityIcon from  '../assets/icons/visibility.png'
 import AvatarIcon from  '../assets/icons/user.png'
+import GoogleIcon from  '../assets/icons/google-icon.png'
 import CloseIcon from '../assets/icons/close.png'
 import CloseXIcon from '../assets/icons/closeIcon.png'
 import TermsAndConditionIcon from '../assets/icons/termsAndCondition.png'
@@ -52,6 +53,7 @@ export {
   SettingsIcon,
   VisibilityIcon,
   AvatarIcon,
+  GoogleIcon,
   CloseIcon,
   CloseXIcon,
   TermsAndConditionIcon,

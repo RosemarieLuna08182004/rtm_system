@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { Authorize, TokenHandler } from "../../../middleware";
+import { TokenHandler } from "../../../middleware";
 import { API } from "../../../constants";
 import {
   userLineValidatorOnCreate,
@@ -8,13 +8,11 @@ import {
 } from "../../../validators";
 import { UserLineModel } from "../../../models";
 import { Success, Error } from "../../../shared";
-import { LoginRequest, Roles } from "../../../types";
-
-const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
+import { LoginRequest } from "../../../types";
 
 @Controller(`${API}/user/line`)
 export default class UserLineController {
-  @Route("get", "/get/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("get", "/get/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await UserLineModel.get(Id);
@@ -27,7 +25,7 @@ export default class UserLineController {
     }
   } // GET
 
-  @Route("get", "/get-all/", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("get", "/get-all/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await UserLineModel.getAll();
@@ -40,7 +38,7 @@ export default class UserLineController {
     }
   } // GET-ALL
 
-  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("delete", "/remove/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await UserLineModel.remove(Id);
@@ -54,7 +52,7 @@ export default class UserLineController {
     }
   } // REMOVE
 
-  @Route("post", "/add/", TokenHandler.verifyToken, requireRoles(Roles.admin)) // administrative: coin rows are created by the server
+  @Route("post", "/add/", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(userLineValidatorOnCreate)
   async add(req: LoginRequest, res: Response, next: NextFunction) {
     try {
@@ -69,7 +67,7 @@ export default class UserLineController {
     }
   }
 
-  @Route("patch", "/update/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("patch", "/update/:Id", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(userLineValidatorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) {
     try {
@@ -84,7 +82,7 @@ export default class UserLineController {
     }
   } // UPDATE
 
-  @Route("patch", "/update-condition/:UserId", TokenHandler.verifyToken, requireRoles(Roles.admin))
+  @Route("patch", "/update-condition/:UserId", TokenHandler.verifyToken, TokenHandler.verifyAdmin)
   @Validate(userLineValidatorOnUpdate)
   async updateByCondition(req: LoginRequest, res: Response, next: NextFunction) {
     try {
