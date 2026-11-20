@@ -31,7 +31,7 @@ describe('getModel', () => {
   }, 10000);
 
   it('should return the data and success message if the response is valid', async () => {
-    const mockResponse = [{ Id: 1, UserId: 1, Coins: 0 }];
+    const mockResponse = [{ Id: 1, UserId: 1 }];
     (GetService.byFields as jest.Mock).mockResolvedValue(mockResponse);
 
     const result = await getModel(1);

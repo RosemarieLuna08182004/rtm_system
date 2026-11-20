@@ -10,6 +10,7 @@ import { editProfileValidator } from "@/validators"
 import { useRouter } from "expo-router"
 import { CustomInput } from '../../FormInputs/CustomInput'
 import { TouchableButton } from '../../FormInputs/TouchableButton'
+import { CountryPicker } from '../../FormInputs/CountryPicker'
 import { Alert } from 'react-native'
 import { userApi } from "@/services/api"
 
@@ -22,6 +23,7 @@ export const EditProfileForm = ({ClassName}) => {
 		defaultValues: {
       Name: auth?.user?.Name || '',
       Email: auth?.user?.Email || '',
+      Country: auth?.user?.Country || undefined,
     }
   });
 	const imageSource = auth?.user?.ProfilePhoto 
@@ -33,12 +35,13 @@ export const EditProfileForm = ({ClassName}) => {
 		try{
 			const response = await userApi.update(auth?.user?.Id, {
 				Name: String(data.Name ?? '').trim(),
-				Email: String(data.Email ?? '').trim().toLowerCase()
+				Email: String(data.Email ?? '').trim().toLowerCase(),
+				Country: data.Country
 			})
 			if(response.data){
 				setAuth((prevAuth) => ({ 
 					...prevAuth, 
-					user: { ...prevAuth?.user, Name: String(data.Name ?? '').trim(), Email: String(data.Email ?? '').trim().toLowerCase() }
+					user: { ...prevAuth?.user, Name: String(data.Name ?? '').trim(), Email: String(data.Email ?? '').trim().toLowerCase(), Country: data.Country }
 				}))
 			}
 			router.push(RoutesChannel.PROFILE)
@@ -88,6 +91,19 @@ export const EditProfileForm = ({ClassName}) => {
 							AutoCorrect={false}
 							AutoComplete="email"
 							TextContentType="emailAddress"
+						/>
+					)}
+				/>
+				<Controller
+					name="Country"
+					control={control}
+					render={({ field: { onChange, value } }) => (
+						<CountryPicker
+							ClassName="mb-3 w-full"
+							Text={'Country'}
+							Value={value}
+							OnChange={onChange}
+							Errors={errors.Country?.message}
 						/>
 					)}
 				/>

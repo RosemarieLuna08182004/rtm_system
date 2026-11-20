@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller, Route, Validate } from "../../../decorators";
-import { forgotPasswordValidator, loginValidator, resetPasswordValidator } from "../../../validators";
+import { changePasswordValidator, forgotPasswordValidator, loginValidator, resetPasswordValidator } from "../../../validators";
 import { API } from "../../../constants";
 import { TokenHandler, authLimiter } from "../../../middleware";
 import { LoginRequest, ModelResponse } from "../../../types";
@@ -190,6 +190,31 @@ export default class AuthController {
     } catch (error: any) {
       logging.log("----------------------------------------");
       logging.error("JWTAuth-Controller [verify-password]:", error.message);
+      logging.log("----------------------------------------");
+      return res.status(500).json({ data: false, message: Error.m001 });
+    }
+  }
+
+  // Change your own password (web admin). The account comes from the login, never the
+  // request body, and the current password must be right, so a stolen login alone can't change it.
+  @Route("post", "/change-password", authLimiter, TokenHandler.verifyToken)
+  @Validate(changePasswordValidator)
+  async changePassword(
+    req: LoginRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response> {
+    try {
+      const { CurrentPassword, NewPassword } = req.body;
+      const [account] = await GetService.byFields(UserQuery.q002, ["Id"], [Number], [Number(req.User?.Id ?? 0)]);
+      if (!account?.Password || !(await compare(String(CurrentPassword ?? ""), account.Password)))
+        return res.status(401).json({ data: false, message: Error.m024 });
+      const response = await UserModel.update(Number(account.Id), { Password: NewPassword } as any);
+      if (!response.data) return res.status(500).json({ data: false, message: Error.m003 });
+      return res.status(200).json({ data: true, message: Success.m004 });
+    } catch (error: any) {
+      logging.log("----------------------------------------");
+      logging.error("JWTAuth-Controller [change-password]:", error.message);
       logging.log("----------------------------------------");
       return res.status(500).json({ data: false, message: Error.m001 });
     }

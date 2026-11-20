@@ -6,7 +6,6 @@ export interface TermTable extends Logs {
     Term:string
     Focus:string
     Definition: string
-    VoiceOver?:string
     Illustration?:string
     Status?: string
     UserTermsId?:number

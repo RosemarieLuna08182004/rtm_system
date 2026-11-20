@@ -5,7 +5,8 @@ import { useRouter } from 'expo-router';
 
 import { singUpValidator } from '@/validators';
 import { SFC, ToastType } from '@/types';
-import { CustomInput, PasswordInput, TouchableButton } from '@/components/FormInputs';
+import { CountryPicker, CustomInput, PasswordInput, TouchableButton } from '@/components/FormInputs';
+import { deviceCountry } from '@/shared/data/countries';
 import * as S from '@/styles';
 import { RoutesChannel } from '@/constants';
 import { showMessage } from '@/shared';
@@ -19,7 +20,9 @@ export const SignUpForm: SFC = ({ClassName}) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { control, handleSubmit, formState: { errors } } = useForm({
-    resolver: yupResolver(singUpValidator)
+    resolver: yupResolver(singUpValidator),
+    // Pre-filled from the phone's region; the user can change it
+    defaultValues: { Country: deviceCountry() ?? undefined },
   });
 
   const onSubmit = async (data: any) => {
@@ -27,7 +30,7 @@ export const SignUpForm: SFC = ({ClassName}) => {
       setIsLoading(true);
       setErrorMessage(''); // Clear previous errors
       const Email = String(data.Email ?? '').trim().toLowerCase();
-      const response = await authApi.register({ Name: String(data.Name ?? '').trim(), Email, Password: data.Password });
+      const response = await authApi.register({ Name: String(data.Name ?? '').trim(), Email, Password: data.Password, Country: data.Country });
       
       if (response.data) {
         // Auto-login after successful sign-up
@@ -104,6 +107,19 @@ export const SignUpForm: SFC = ({ClassName}) => {
             AutoComplete="email"
             TextContentType="emailAddress"
             ReturnKeyType="next"
+          />
+        )}
+      />
+      <Controller
+        name="Country"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <CountryPicker
+            ClassName="mb-3"
+            Text="Country"
+            Value={value}
+            OnChange={onChange}
+            Errors={errors.Country?.message}
           />
         )}
       />

@@ -1,10 +1,11 @@
 import { ButtonType, DBTable, RouteChannel, SFC, termHC } from "../../../types";
 import * as S from '../../../styles/Styles'
-import { CustomButton, PageBreadCrumbs, EnhancedTable, Skeleton } from "../../../components";
+import { CustomButton, PageBreadCrumbs, EnhancedTable, Skeleton, AttentionFilterBanner } from "../../../components";
 import { useNavigate } from "react-router-dom";
 import AddIcon from '@mui/icons-material/Add';
 import { useGetAllTerm } from "../../../hooks/api/term/useGetAllTerm";
-import { Suspense } from "react";
+import { useAttentionFilter } from "../../../hooks";
+import { Suspense, useMemo } from "react";
 
 export const AdminTermPage : SFC = ({ClassName}) => {
     const navigate = useNavigate()
@@ -12,6 +13,8 @@ export const AdminTermPage : SFC = ({ClassName}) => {
         { Text: 'Dashboard', OnClick: () => navigate(RouteChannel.DASHBOARD) },
     ]
     const {records, refetch, loading} = useGetAllTerm()
+    const { filter, applyFilter, clearFilter } = useAttentionFilter()
+    const rows = useMemo(() => applyFilter(records), [records, applyFilter])
     return (
         <>
             <S.Container className={ClassName}>
@@ -23,12 +26,13 @@ export const AdminTermPage : SFC = ({ClassName}) => {
                         </S.Actions>
                     </S.Actions>
                 </S.PageTopBar>
+                {filter && !loading && <AttentionFilterBanner Filter={filter} Shown={rows.length} Noun="terms" OnClear={clearFilter} />}
                 <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
                     <Suspense fallback={<Skeleton />}>
-                        <EnhancedTable IsLoading={loading} Title="Terms" Rows={records} HeadCells={termHC} OnRecordDelete={()=>refetch()} RemoveTable={DBTable.TERM} ClassName="md:max-h-[calc(100vh-200px)]" />
+                        <EnhancedTable IsLoading={loading} Title="Terms" Description="Heading terms across all volumes, each with its illustration." Rows={rows} HeadCells={termHC} OnRecordDelete={()=>refetch()} RemoveTable={DBTable.TERM} ClassName="md:max-h-[calc(100vh-156px)]" />
                     </Suspense>
-                </S.Content> 
-            </S.Container> 
+                </S.Content>
+            </S.Container>
         </>
     )
 }

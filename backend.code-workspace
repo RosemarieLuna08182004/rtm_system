@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "backend"
+		},
+		{
+			"path": "WEB"
+		}
+	],
+	"settings": {
+		// Use the project's TypeScript (5.6) instead of the newer one bundled with VS Code
+		"js/ts.tsdk.path": "backend/node_modules/typescript/lib",
+		"js/ts.tsdk.promptToUseWorkspaceVersion": true
+	}
+}

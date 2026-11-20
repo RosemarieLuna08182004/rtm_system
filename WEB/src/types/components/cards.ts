@@ -24,7 +24,6 @@ export interface TermCardProps {
     Definition?: string;
     Focus?: string;
     Illustration?:string
-    VoiceOver?:string
 }
 
 export interface SubTermCardProps {
@@ -35,4 +34,6 @@ export interface SubTermCardProps {
    refetch: () => void,
    IsBorderLeft:boolean,
    Illustration?: string | null
+   /** Show the ⋯ edit/delete menu (hidden on the sub term's own preview) */
+   ShowOptions?: boolean
 }

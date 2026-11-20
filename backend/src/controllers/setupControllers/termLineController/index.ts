@@ -6,7 +6,7 @@ import {
   termLineValidatorOnCreate,
   termLineValidatorOnUpdate,
 } from "../../../validators";
-import { TermLineModel } from "../../../models";
+import { DuplicateAlerts, TermLineModel } from "../../../models";
 import { Success, Error } from "../../../shared";
 import { LoginRequest, Roles } from "../../../types";
 
@@ -73,6 +73,7 @@ export default class TermLineController {
     try {
       const Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10), response = await TermLineModel.add(Data, CurrentId);
       if(!response.data) return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterSubTermSaved(Data, null, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch(error:any){
       logging.log("----------------------------------------");
@@ -86,8 +87,10 @@ export default class TermLineController {
   @Validate(termLineValidatorOnUpdate)
   async update(req: LoginRequest, res: Response, next: NextFunction) {
     try {
-      const Id = parseInt(req.params.Id, 10), Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10), response = await TermLineModel.update(Id, Data, CurrentId);
+      const Id = parseInt(req.params.Id, 10), Data = req.body, CurrentId = parseInt(`${req.User?.Id}`, 10);
+      const before = await DuplicateAlerts.subTermSnapshot(Id), response = await TermLineModel.update(Id, Data, CurrentId);
       if(!response.data) return res.status(401).json({ data: false, message: response.message });
+      await DuplicateAlerts.afterSubTermSaved(Data, before, CurrentId); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch(error:any){
       logging.log("----------------------------------------");

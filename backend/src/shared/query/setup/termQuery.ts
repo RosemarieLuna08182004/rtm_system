@@ -9,9 +9,9 @@ export enum TermQuery {
   q008 = `SELECT Id FROM termline WHERE TermId = ?`,
   q009 = `DELETE FROM term`,
   q0010 = `DELETE FROM term WHERE Id = ?`,
-  q0011 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, term.VoiceOver, term.Illustration, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term LEFT JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy WHERE term.Id = ?`,
-  q0012 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, term.VoiceOver, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term LEFT JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy ORDER BY term.Term ASC`,
-  q0013 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, term.VoiceOver, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term INNER JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy  LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy WHERE term.ChapterId = ? ORDER BY term.Term ASC`,
+  q0011 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, term.Illustration, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term LEFT JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy WHERE term.Id = ?`,
+  q0012 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term LEFT JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy ORDER BY term.Term ASC`,
+  q0013 = `SELECT term.Id, term.ChapterId, chapter.Title AS ChapterTitle, term.Term, term.Focus, term.Definition, created.Name AS CreatedBy, term.DateCreated, updated.Name AS UpdatedBy, term.DateUpdated FROM term INNER JOIN chapter ON chapter.Id = term.ChapterId LEFT JOIN user AS created ON created.Id = term.CreatedBy  LEFT JOIN user AS updated ON updated.Id = term.UpdatedBy WHERE term.ChapterId = ? ORDER BY term.Term ASC`,
   q0014 = `
     SELECT 
     term.Id, 
@@ -20,7 +20,6 @@ export enum TermQuery {
     term.Term, 
     term.Focus, 
     term.Definition, 
-    term.VoiceOver, 
     created.Name AS CreatedBy, 
     term.DateCreated, 
     updated.Name AS UpdatedBy, 

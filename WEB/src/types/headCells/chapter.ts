@@ -6,7 +6,7 @@ export const chapterHC: HeadCell<ChapterTable>[] = [
       Id: 'Title',
       numeric: false,
       disablePadding: true,
-      label: 'Account Type',
+      label: 'Volume',
     },
     {
       Id: 'DateCreated',

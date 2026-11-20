@@ -14,9 +14,8 @@ export const DB_PORT = process.env.DB_PORT || 3306;
 export const DB_NAME = process.env.DB_NAME || "";
 
 export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || "localhost";
-export const SERVER_PORT = process.env.SERVER_PORT
-  ? Number(process.env.SERVER_PORT)
-  : 12345;
+// SERVER_PORT if set, otherwise PORT (which hosts such as Render provide)
+export const SERVER_PORT = Number(process.env.SERVER_PORT || process.env.PORT || 12345);
 
 export const server = {
   SERVER_HOSTNAME,
@@ -47,7 +46,3 @@ export const SMTP_USER = process.env.SMTP_USER || "";
 export const SMTP_PASS = process.env.SMTP_PASS || "";
 export const MAIL_FROM = process.env.MAIL_FROM || SMTP_USER;
 
-// STRIPE API
-
-export const PUBLISHABLE_KEY = process.env.PUBLISHABLE_KEY || "";
-export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";

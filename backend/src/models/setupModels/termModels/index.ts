@@ -3,6 +3,7 @@ import { getModel } from "./get";
 import { getAllModel } from "./getAll";
 import { removeModel } from "./remove";
 import { updateModel } from "./update";
+import { importRowsModel } from "./importRows";
 import {
   getAllByChapterModel,
   getAllByChapterUserModel,
@@ -11,6 +12,7 @@ import {
 class TermModel {
   add: typeof addModel;
   imports: typeof importModel;
+  importRows: typeof importRowsModel;
   get: typeof getModel;
   getAll: typeof getAllModel;
   getAllByChapter: typeof getAllByChapterModel;
@@ -21,6 +23,7 @@ class TermModel {
   constructor() {
     this.add = addModel;
     this.imports = importModel;
+    this.importRows = importRowsModel;
     this.get = getModel;
     this.getAll = getAllModel;
     this.remove = removeModel;

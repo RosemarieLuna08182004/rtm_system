@@ -8,3 +8,4 @@ export interface NotificationTable extends Id {
     DateCreated?: Date | string
     DateUpdated?: Date | string
 }
+export type NotificationTables = NotificationTable[]

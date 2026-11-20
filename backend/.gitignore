@@ -18,3 +18,7 @@ requests.rest
 # OAuth client secrets
 *client_secret_*.json
 rtm-project-441914-*.json
+
+# Docker build context
+.env.*
+!.env.example

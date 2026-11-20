@@ -21,6 +21,12 @@ export const userHC: HeadCell<UserTable>[] = [
       label: 'Email',
     },
     {
+      Id: 'Country',
+      numeric: false,
+      disablePadding: false,
+      label: 'Country',
+    },
+    {
       Id: 'DateCreated',
       numeric: true,
       disablePadding: false,

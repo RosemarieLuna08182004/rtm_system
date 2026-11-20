@@ -5,6 +5,7 @@ import TermController from "./termController";
 import TermLineController from "./termLineController";
 import UserController from "./userController";
 import UserLineController from "./userLineController";
+import NotificationController from "./notificationController";
 
 export {
   CategoryController,
@@ -14,4 +15,5 @@ export {
   TermLineController,
   UserController,
   UserLineController,
+  NotificationController,
 };

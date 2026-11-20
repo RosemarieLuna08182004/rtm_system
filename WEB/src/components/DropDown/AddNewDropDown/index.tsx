@@ -1,54 +1,65 @@
 import { useState, useEffect, useRef } from 'react';
-import { CircleButton } from "../../FormInputs";
 import AddIcon from '@mui/icons-material/Add';
 import * as S from './Styles';
-import { ButtonType, RouteChannel } from '../../../types';
+import { RouteChannel } from '../../../types';
 import { useNavigate } from 'react-router-dom';
 
+const ADD_OPTIONS = [
+    { label: 'New Volume', route: RouteChannel.NEW_CHAPTER },
+    { label: 'New Term', route: RouteChannel.NEW_TERM },
+    { label: 'New Sub Term', route: RouteChannel.NEW_TERM_LINE },
+    { label: 'New Category', route: RouteChannel.NEW_CATEGORY },
+];
+
 export const AddNewDropDown = () => {
-    const [activeDropdown, setActiveDropdown] = useState<null | string>(null);
+    const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setActiveDropdown(null);
-    };
-
     useEffect(() => {
-        if (activeDropdown) document.addEventListener('mousedown', handleClickOutside);
-        else document.removeEventListener('mousedown', handleClickOutside);
+        if (!isOpen) return;
 
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false);
+        };
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setIsOpen(false);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
         };
-    }, [activeDropdown]);
+    }, [isOpen]);
 
     const handleItemClick = (route: string) => {
-        setActiveDropdown(null); 
+        setIsOpen(false);
         navigate(route);
     };
 
     return (
         <div className="relative inline-block" ref={dropdownRef}>
-            <CircleButton OnClick={() => setActiveDropdown(activeDropdown === 'NewItem' ? null : 'NewItem')} IsNotification={false} Icon={<AddIcon className="text-primary" />}  Type={ButtonType.button}/>
+            <button
+                type="button"
+                aria-label="Add new"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                onClick={() => setIsOpen((open) => !open)}
+                className="flex items-center justify-center w-14 h-8 rounded-lg bg-primary text-white shadow-md shadow-blue-600/30 transition-colors hover:bg-[#1534a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+                <AddIcon fontSize="small" />
+            </button>
 
-            {activeDropdown === 'NewItem' && (
-                <S.Dropdown className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <S.DropdownItem className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 items-center justify-start flex" onClick={() => handleItemClick(RouteChannel.NEW_CHAPTER)}>
-                        <AddIcon className="text-primary" /> <span>New Volume</span>
-                    </S.DropdownItem>
-                    <S.DropdownItem className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 items-center justify-start flex" onClick={() => handleItemClick(RouteChannel.NEW_TERM)}>
-                        <AddIcon className="text-primary" /> <span>New Term</span>
-                    </S.DropdownItem>
-                    <S.DropdownItem className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 items-center justify-start flex" onClick={() => handleItemClick(RouteChannel.NEW_TERM_LINE)}>
-                        <AddIcon className="text-primary" /> <span>New Sub Term</span>
-                    </S.DropdownItem>
-                    <S.DropdownItem className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 items-center justify-start flex" onClick={() => handleItemClick(RouteChannel.NEW_CATEGORY)}>
-                        <AddIcon className="text-primary" /> <span>New Category</span>
-                    </S.DropdownItem>
-                    <S.DropdownItem className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 items-center justify-start flex" onClick={() => handleItemClick(RouteChannel.NEW_PRODUCT)}>
-                        <AddIcon className="text-primary" /> <span>New Product</span>
-                    </S.DropdownItem>
+            {isOpen && (
+                <S.Dropdown role="menu">
+                    {ADD_OPTIONS.map(({ label, route }) => (
+                        <S.DropdownItem key={route} type="button" role="menuitem" onClick={() => handleItemClick(route)}>
+                            <AddIcon fontSize="small" className="text-primary" />
+                            <span>{label}</span>
+                        </S.DropdownItem>
+                    ))}
                 </S.Dropdown>
             )}
         </div>

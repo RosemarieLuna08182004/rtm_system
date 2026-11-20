@@ -1,8 +1,9 @@
 import { ButtonType, CategoryTable, FormProps, SFC, ToastType } from "../../../types";
+import { UnsavedChangesGuard } from "../../../context";
 import * as S from '../../../styles'
 import { twMerge } from "tailwind-merge";
 import { Form, Formik } from "formik";
-import { CustomButton, Input, Skeleton } from "../..";
+import { CustomButton, Input, Skeleton, SectionHeader } from "../..";
 import { categoryValidator } from "../../../validators";
 import SaveIcon from '@mui/icons-material/Save';
 import { displayToast } from "../../../utils";
@@ -10,7 +11,7 @@ import { useParams } from "react-router-dom";
 import { useAddCategory, useGetCategory, useUpdateCategory } from "../../../hooks";
 import { Category } from "../../../shared";
 
-export const CategoryForm : SFC<FormProps> = ({ClassName, Title = 'NA', IsEdit=false }) => {
+export const CategoryForm : SFC<FormProps> = ({ClassName, Title = 'NA', Description, IsEdit=false, OnSaved }) => {
     const { Id } = useParams<{ Id?: string }>()
     const { records: category, loading } = useGetCategory(parseInt(`${Id || 0}`, 10))
     const flag = Id?loading?true:false:false
@@ -25,7 +26,7 @@ export const CategoryForm : SFC<FormProps> = ({ClassName, Title = 'NA', IsEdit=f
     const handleSubmit = async (values: Category) => {
         try {
             if (!Id || !Id.trim()) await add(values)
-            else await update( Id, values)
+            else if (await update( Id, values)) OnSaved?.()
         } catch (error: any) {
             displayToast(error.message, ToastType.error)
         }
@@ -35,7 +36,7 @@ export const CategoryForm : SFC<FormProps> = ({ClassName, Title = 'NA', IsEdit=f
         <>
             <S.Container className={twMerge(' w-full py-3 ', ClassName)}>
                 <S.Divider className=" mb-4">
-                    <S.Span className="text-xl text-slate-600">{Title}</S.Span>
+                    <SectionHeader Title={Title} Description={Description} />
                 </S.Divider>
                 <S.Content>
                 {!flag?  (
@@ -44,6 +45,8 @@ export const CategoryForm : SFC<FormProps> = ({ClassName, Title = 'NA', IsEdit=f
                         {({ errors, touched, isValid, isSubmitting, handleChange, values, dirty }) => (
                         
                         <Form>
+                            {/* Warn before leaving with unsaved changes (not while a save is in progress) */}
+                            <UnsavedChangesGuard When={dirty && !isSubmitting} />
                             <S.Divider className="flex flex-col w-full ml-1">
                                 <S.Divider className="w-full">
                                     <Input

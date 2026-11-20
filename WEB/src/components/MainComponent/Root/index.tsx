@@ -6,14 +6,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useEffect } from "react";
 import { SessionExpiredModal } from "../../../modals";
 import * as S from '../../../styles';
-import { ipx } from "../../FormInputs";
-import { date } from "../../../constants";
 
 export const RootLayout: SFC = () => {
   const { reSignOut } = useSignOut();
   const [modalIsOpen, toggleModal] = useToggle(false);
   const { auth } = useAuth();
-  const xp = ipx(new Date(date ?? ""));
 
   const confirm = () => {
     toggleModal();
@@ -41,11 +38,6 @@ export const RootLayout: SFC = () => {
 
     return () => clearInterval(intervalId);
   }, [auth.accessToken, auth?.user, toggleModal]);
-
-  const renderMods = () => {
-    if (xp.spx) return null;
-    return null;
-  };
 
   const renderModal = () => {
     if (!modalIsOpen) return null;
@@ -76,7 +68,6 @@ export const RootLayout: SFC = () => {
         rtl={false}
         transition={Bounce}
       />
-      {renderMods()}
       {renderModal()}
     </>
   );

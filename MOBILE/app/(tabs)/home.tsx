@@ -85,7 +85,6 @@ export default function Home() {
 	const unlocked = useMemo(() => new Set(chapters.filter((c) => c.Status === 'Unlock').map((c) => c.ChapterId)), [chapters])
 	const daily = useMemo(() => termOfTheDay(terms, unlocked), [terms, unlocked])
 	const continueTerm = recent[0]
-	const moreRecent = recent.slice(1, 6)
 
 	// Keep the home-screen widget up to date: today's term, progress, recent terms.
 	useEffect(() => {
@@ -148,55 +147,36 @@ export default function Home() {
 							{/* Continue where you left off */}
 							<SectionTitle title="Continue where you left off" />
 							{continueTerm ? (
-								<>
-									<FadeInItem index={0}>
-									<S.TouchableOpacity
-										activeOpacity={0.9}
-										onPress={() => openTerm(continueTerm.TermId, continueTerm.ChapterId, continueTerm.Term)}
-										accessibilityRole="button"
-										accessibilityLabel={`Continue with ${continueTerm.Term}`}
+								<FadeInItem index={0}>
+								<S.TouchableOpacity
+									activeOpacity={0.9}
+									onPress={() => openTerm(continueTerm.TermId, continueTerm.ChapterId, continueTerm.Term)}
+									accessibilityRole="button"
+									accessibilityLabel={`Continue with ${continueTerm.Term}`}
+								>
+									<S.LinearGradient
+										colors={['#1d4ed8', '#2563eb', '#3b82f6']}
+										start={{ x: 0, y: 0 }}
+										end={{ x: 1, y: 1 }}
+										style={{ borderRadius: 20, padding: 18, overflow: 'hidden' }}
 									>
-										<S.LinearGradient
-											colors={['#1d4ed8', '#2563eb', '#3b82f6']}
-											start={{ x: 0, y: 0 }}
-											end={{ x: 1, y: 1 }}
-											style={{ borderRadius: 20, padding: 18, overflow: 'hidden' }}
-										>
-											<S.View className="absolute right-3 top-6 opacity-30">
-												<MaterialCommunityIcons name="stethoscope" size={84} color="#ffffff" />
-											</S.View>
-											<S.View className="self-start bg-white/20 rounded-full px-3 py-1">
-												<S.Text className="text-white text-[10px] font-pbold tracking-wider">LAST VIEWED</S.Text>
-											</S.View>
-											<S.Text className="text-white text-xl font-pbold mt-2 pr-20" numberOfLines={2}>{continueTerm.Term}</S.Text>
-											<S.Text className="text-blue-100 text-sm font-pregular mt-0.5" numberOfLines={1}>
-												{chapterById.get(continueTerm.ChapterId)?.Title ?? ''}
-											</S.Text>
-											<S.View className="self-start flex-row items-center bg-white rounded-full px-4 py-2 mt-4">
-												<S.Text className="text-blue-700 text-sm font-pbold mr-1">Continue</S.Text>
-												<MaterialCommunityIcons name="arrow-right" size={16} color="#1d4ed8" />
-											</S.View>
-										</S.LinearGradient>
-									</S.TouchableOpacity>
-									</FadeInItem>
-									{moreRecent.length > 0 && (
-										<S.ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3" contentContainerStyle={{ paddingRight: 8 }}>
-											{moreRecent.map((r, index) => (
-												<S.TouchableOpacity
-													key={r.TermId}
-													onPress={() => openTerm(r.TermId, r.ChapterId, r.Term)}
-													className={`mr-2 px-5 py-2.5 rounded-full border ${index === 0
-														? 'bg-blue-700 border-blue-700'
-														: 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-700'}`}
-													accessibilityRole="button"
-													accessibilityLabel={`Open ${r.Term}`}
-												>
-													<S.Text className={`text-sm font-pmedium ${index === 0 ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`} numberOfLines={1}>{r.Term}</S.Text>
-												</S.TouchableOpacity>
-											))}
-										</S.ScrollView>
-									)}
-								</>
+										<S.View className="absolute right-3 top-6 opacity-30">
+											<MaterialCommunityIcons name="stethoscope" size={84} color="#ffffff" />
+										</S.View>
+										<S.View className="self-start bg-white/20 rounded-full px-3 py-1">
+											<S.Text className="text-white text-[10px] font-pbold tracking-wider">LAST VIEWED</S.Text>
+										</S.View>
+										<S.Text className="text-white text-xl font-pbold mt-2 pr-20" numberOfLines={2}>{continueTerm.Term}</S.Text>
+										<S.Text className="text-blue-100 text-sm font-pregular mt-0.5" numberOfLines={1}>
+											{chapterById.get(continueTerm.ChapterId)?.Title ?? ''}
+										</S.Text>
+										<S.View className="self-start flex-row items-center bg-white rounded-full px-4 py-2 mt-4">
+											<S.Text className="text-blue-700 text-sm font-pbold mr-1">Continue</S.Text>
+											<MaterialCommunityIcons name="arrow-right" size={16} color="#1d4ed8" />
+										</S.View>
+									</S.LinearGradient>
+								</S.TouchableOpacity>
+								</FadeInItem>
 							) : (
 								<S.TouchableOpacity onPress={() => router.push(RoutesChannel.VOLUMES)} activeOpacity={0.9} accessibilityRole="button">
 									<S.LinearGradient colors={['#1d4ed8', '#3b82f6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 18 }}>

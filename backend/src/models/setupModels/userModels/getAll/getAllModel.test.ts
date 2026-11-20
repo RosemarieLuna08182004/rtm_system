@@ -20,7 +20,7 @@ describe('getAllModel', () => {
     expect(result).toEqual({ data: [], message: err.m011 });
   }, 10000);
 
-  it('should return the data and success message if the response is valid', async () => {
+  it('should return the users without password hashes or tokens', async () => {
     const mockResponse = [
         { Id: 1, GoogleId: "09876543122", Name: "test", Email: "test@gmail.com", Password: "test", ProfilePhoto: null, AccessToken: null },
         { Id: 2, GoogleId: "09876543122", Name: "test", Email: "test@gmail.com", Password: "test", ProfilePhoto: null, AccessToken: null },
@@ -28,7 +28,13 @@ describe('getAllModel', () => {
     (GetService.byQuery as jest.Mock).mockResolvedValue(mockResponse);
 
     const result = await getAllModel();
-    expect(result).toEqual({ data: mockResponse, message: Success.m001 });
+    expect(result).toEqual({
+      data: [
+        { Id: 1, GoogleId: "09876543122", Name: "test", Email: "test@gmail.com", ProfilePhoto: null },
+        { Id: 2, GoogleId: "09876543122", Name: "test", Email: "test@gmail.com", ProfilePhoto: null },
+      ],
+      message: Success.m001,
+    });
   }, 10000);
 
   it('should handle exceptions and return the correct error message', async () => {

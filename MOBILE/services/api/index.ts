@@ -50,7 +50,7 @@ const get = async <T>(url: string, signal?: Signal): Promise<T> =>
 export const authApi = {
   login: async (Email: string, Password: string) =>
     (await axios.post<ApiResponse<LoginResult>>(`${API}/auth/login`, { Email, Password })).data,
-  register: async (data: { Name: string; Email: string; Password: string }) =>
+  register: async (data: { Name: string; Email: string; Password: string; Country?: string }) =>
     (await axios.post<ApiResponse<boolean>>(`${API}/user/add`, { ...data, AccountType: "user" })).data,
   forgotPassword: async (Email: string) =>
     (await axios.post<ApiResponse<{ resetToken: string }>>(`${API}/auth/forgot-password`, { Email })).data,
@@ -61,7 +61,7 @@ export const authApi = {
 };
 
 export const userApi = {
-  update: async (Id: number, data: { Name?: string; Email?: string; Password?: string; CurrentPassword?: string }) =>
+  update: async (Id: number, data: { Name?: string; Email?: string; Password?: string; CurrentPassword?: string; Country?: string }) =>
     (await axiosPrivate.patch<ApiResponse<boolean>>(`${API}/user/update/${Id}`, data)).data,
 };
 

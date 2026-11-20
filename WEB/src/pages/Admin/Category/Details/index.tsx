@@ -1,16 +1,17 @@
 import { ButtonType, RouteChannel, SFC } from "../../../../types";
 import * as S from '../../../../styles/Styles'
-import { CategoryForm, CustomButton, PageBreadCrumbs, Skeleton } from "../../../../components";
-import { useNavigate } from "react-router-dom";
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
+import { CategoryForm, CategoryPreview, CustomButton, PageBreadCrumbs } from "../../../../components";
+import { useNavigate, useParams } from "react-router-dom";
+import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useToggle } from "../../../../hooks";
-import { Suspense } from "react";
+import { useState } from "react";
 
 export const AdminCategoryDetailsPage : SFC = ({ClassName}) => {
     const navigate = useNavigate()
-    const [isEdit, toggleEdit ] = useToggle(false);
+    // Opens as a preview; Edit shows the form. Save or Cancel returns to the preview.
+    const [isEdit, setIsEdit] = useState(false);
+    const { Id } = useParams<{ Id?: string }>()
     const links = [
         { Text: 'Dashboard', OnClick: () => navigate(RouteChannel.DASHBOARD) },
         { Text: 'Category', OnClick: () => navigate(RouteChannel.CATEGORY) }
@@ -23,17 +24,23 @@ export const AdminCategoryDetailsPage : SFC = ({ClassName}) => {
                 <S.Actions className="flex justify-between w-full items-center">
                     <PageBreadCrumbs Links={links} Active="Category Details"/>
                     <S.Actions className="flex justify-end gap-2">
-                        <CustomButton  icon={isEdit?  <LockIcon className="md:text-white text-primary" /> : <LockOpenIcon className="md:text-white text-primary" />} onClick={toggleEdit} text={isEdit? 'Lock' : 'Unlock'} type={ButtonType.button}/>
+                        {isEdit
+                            ? <CustomButton icon={<CloseIcon className="md:text-white text-primary" />} onClick={() => setIsEdit(false)} text='Cancel' type={ButtonType.button}/>
+                            : <CustomButton icon={<EditIcon className="md:text-white text-primary" />} onClick={() => setIsEdit(true)} text='Edit' type={ButtonType.button}/>}
                         <CustomButton  icon={<ArrowBackIcon className="md:text-white text-primary" />} onClick={()=>navigate(RouteChannel.CATEGORY)} text={'Back'} type={ButtonType.button} />
                     </S.Actions >
                 </S.Actions>
             </S.PageTopBar>
-            <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
-                <Suspense fallback={<Skeleton/>}>
-                    <CategoryForm Title="Category Details" IsEdit={!isEdit}/>
-                </Suspense>
-            </S.Content> 
-        </S.Container> 
+            {isEdit ? (
+                <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
+                    <CategoryForm Title="Edit Category" Description="The name and meaning of this sub term category." OnSaved={() => setIsEdit(false)}/>
+                </S.Content>
+            ) : (
+                <S.Content className="flex mb-2 flex-col w-full rounded-md text-zinc-800 items-center py-1">
+                    <CategoryPreview Id={Number(Id || 0)} />
+                </S.Content>
+            )}
+        </S.Container>
         </>
     )
 }

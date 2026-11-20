@@ -14,7 +14,7 @@ const { requireRoles, requireSelf, STAFF_ROLES } = Authorize;
 
 @Controller(`${API}/product`)
 export default class ProductController {
-  @Route("get", "/get/:Id", TokenHandler.verifyToken)
+  @Route("get", "/get/:Id", TokenHandler.verifyToken, requireRoles(Roles.admin))
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const Id = parseInt(req.params.Id, 10), response = await ProductModel.get(Id);
@@ -27,7 +27,7 @@ export default class ProductController {
     }
   }
 
-  @Route("get", "/get-all/", TokenHandler.verifyToken)
+  @Route("get", "/get-all/", TokenHandler.verifyToken, requireRoles(Roles.admin))
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const response = await ProductModel.getAll();

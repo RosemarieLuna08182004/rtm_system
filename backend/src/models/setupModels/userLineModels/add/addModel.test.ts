@@ -22,7 +22,7 @@ describe('addModel', () => {
         (isFound as jest.Mock).mockResolvedValue({ data: false, message: '' });
         (AddService.record as jest.Mock).mockResolvedValue(null);
 
-        const result = await addModel({ UserId: 1, Coins: 1, IsBundle:false });
+        const result = await addModel({ UserId: 1, IsBundle:false });
         expect(result).toEqual({ data: false, message: Error.m003 });
     }, 10000);
 
@@ -30,7 +30,7 @@ describe('addModel', () => {
         (isFound as jest.Mock).mockResolvedValue({ data: false, message: '' });
         (AddService.record as jest.Mock).mockResolvedValue({ id: 1 });
 
-        const result = await addModel({ UserId: 1, Coins: 1, IsBundle:false });
+        const result = await addModel({ UserId: 1, IsBundle:false });
         expect(result).toEqual({ data: true, message: Success.m002 });
     }, 10000);
 });

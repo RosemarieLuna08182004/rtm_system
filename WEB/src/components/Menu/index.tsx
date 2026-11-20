@@ -1,27 +1,37 @@
-import { MenuProps, SFC } from "../../types";
-import UIcon from '@mdi/react'
+import { useLocation } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
+import { MenuProps, MenuSectionProps, RouteChannel } from "../../types";
+import * as S from './Styles'
 
-// Sidebar item. The page you're on is solid blue; others are white and tint on hover.
-export const Menu: SFC<MenuProps> = ({icon, label, onClick, active = false}) => {
+export const Menu = ({icon, label, onClick, to}: MenuProps) => {
+    const { pathname } = useLocation();
+
+    // Dashboard is '/a', which prefixes every other admin route, so it only matches exactly.
+    const active = !!to && (pathname === to || (to !== RouteChannel.DASHBOARD && pathname.startsWith(`${to}/`)));
+
     return (
         <button
             type="button"
-            onClick={onClick}
             aria-current={active ? 'page' : undefined}
+            onClick={onClick}
             className={twMerge(
-                "group mb-2 w-full rounded-md cursor-pointer transition-all duration-200 ease-out",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                "active:scale-[0.98]",
-                active
-                    ? "bg-[#1030a4] text-white shadow-md ring-1 ring-white/40"
-                    : "bg-white text-primary hover:bg-blue-50 hover:translate-x-0.5"
+                "menu flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left text-[15px] font-medium text-white",
+                "cursor-pointer transition-colors duration-200 hover:bg-white/10",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60",
+                active && "bg-white/15 hover:bg-white/20"
             )}
         >
-            <div className="flex items-center p-2">
-                <UIcon path={icon} size={'30px'} className={active ? 'text-white' : 'text-[#1B42CE]'} />
-                <span className={twMerge("ml-2 font-psemibold text-lg", active ? "text-white" : "text-primary group-hover:text-[#1030a4]")}>{label}</span>
-            </div>
+            <S.Icon path={icon} size={'22px'} />
+            <span>{label}</span>
         </button>
+    )
+}
+
+export const MenuSection = ({label}: MenuSectionProps) => {
+    return (
+        <div className="flex items-center gap-3 px-3 pt-6 pb-2" role="presentation">
+            <span className="text-xs font-medium uppercase tracking-wider text-blue-200/80">{label}</span>
+            <span className="h-px flex-1 bg-white/15" />
+        </div>
     )
 }

@@ -1,4 +1,5 @@
 import { isFound } from "../../../../functions";
+import { withoutSecrets } from "../../../../functions/security";
 import { GetService } from "../../../../services";
 import { DBTable, Error, Success, UserQuery } from "../../../../shared";
 import { ModelResponse } from "../../../../types";
@@ -10,7 +11,7 @@ export const getModel = async (Id: number = 0): Promise<ModelResponse> => {
     if(!isExists.data) return { data: [], message: isExists.message }
     const response = await GetService.byId(Id, DBTable.t007);
     if (!response) return {data: [], message: Error.m011 }
-    return { data: response[0], message: Success.m001 }
+    return { data: withoutSecrets(response[0]), message: Success.m001 }
   } catch (error: any) {
     logging.log("----------------------------------------");
     logging.error("UserTable-Model [getModel]:", error.message);

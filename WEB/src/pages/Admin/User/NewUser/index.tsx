@@ -21,7 +21,7 @@ export const AdminNewUserPage : SFC = ({ClassName}) => {
                 </S.Actions >
             </S.PageTopBar>
             <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
-                <UserForm Title="New User" />
+                <UserForm Title="New User" Description="Create an account for a new RTM user." />
             </S.Content> 
         </S.Container> 
         </>

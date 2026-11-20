@@ -21,7 +21,7 @@ export const AdminNewChapterPage : SFC = ({ClassName}) => {
                 </S.Actions >
             </S.PageTopBar>
             <S.Content className="flex mb-2 flex-col bg-white w-full h-fit rounded-md text-zinc-800 flex items-center px-3 py-2">
-                <ChapterForm Title="New Volume" IsEdit={false}/>
+                <ChapterForm Title="New Volume" Description="Create a body-system volume to group related terms." IsEdit={false}/>
             </S.Content> 
         </S.Container> 
         </>

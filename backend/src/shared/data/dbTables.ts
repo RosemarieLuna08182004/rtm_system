@@ -9,4 +9,5 @@ export enum DBTable {
   t007 = "user",
   t008 = "userline",
   t009 = "userterms",
+  t010 = "notification",
 }

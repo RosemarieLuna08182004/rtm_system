@@ -1,3 +1,6 @@
 export * from './AuthProvider'
 export * from './RequireAuth'
 export * from './PersistContext'
+export * from './SearchProvider'
+export * from './UnsavedChanges'
+export * from './LogoutConfirm'

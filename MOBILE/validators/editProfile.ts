@@ -9,5 +9,7 @@ export const editProfileValidator = yup.object().shape({
   Email: yup.string()
     .trim()
     .required('Email is required')
-    .email('Enter a valid email address')
+    .email('Enter a valid email address'),
+  Country: yup.string()
+    .required('Please choose your country'),
 });

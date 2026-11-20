@@ -4,7 +4,7 @@ import { Controller, Route, Validate } from "../../../decorators";
 import { Authorize, TokenHandler, registerLimiter } from "../../../middleware";
 import { API } from "../../../constants";
 import { userValidatorOnCreate, userValidatorOnUpdate } from "../../../validators";
-import { UserModel } from "../../../models";
+import { NotificationModel, UserModel } from "../../../models";
 import { Success, Error, UserQuery } from "../../../shared";
 import { LoginRequest, Roles } from "../../../types";
 import { GOOGLE_PLACEHOLDER_PASSWORD, toSafeUser, toSafeUsers } from "../../../functions";
@@ -70,6 +70,7 @@ export default class UserController {
       if (Data.Email) Data.Email = String(Data.Email).trim().toLowerCase();
       const response = await UserModel.add(Data);
       if(!response.data) return res.status(401).json({ data: false, message: response.message });
+      await NotificationModel.addNewUser(Data.Email, Data.Name, "email"); // never throws
       return res.status(200).json({ data: true, message: response.message });
     } catch(error:any){
       logging.log("----------------------------------------");

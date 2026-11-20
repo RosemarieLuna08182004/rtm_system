@@ -16,6 +16,7 @@ const TABS = [
 import { AppErrorBoundary } from '@/components/States/AppErrorBoundary';
 // A screen that crashes shows a friendly 'Try again' page instead of closing the app.
 export { AppErrorBoundary as ErrorBoundary }
+import { CountryPrompt } from '@/components/Modals/CountryPrompt';
 
 export default function TabsLayout() {
     const insets = useSafeAreaInsets();
@@ -60,6 +61,8 @@ export default function TabsLayout() {
             </Tabs>
             {/* Every tab has a blue header, so light status-bar icons in both themes. */}
             <StatusBar style="light" />
+            {/* Asks once for a country if the account has none (older accounts) */}
+            <CountryPrompt />
         </>
     );
 };

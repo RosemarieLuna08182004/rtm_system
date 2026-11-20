@@ -14,7 +14,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
+
+  /* Stops rubber-band/edge scrolling from bubbling up to the browser, which
+     otherwise reads a horizontal overscroll as a swipe-to-go-back/forward
+     gesture (shows the circular back-arrow affordance mid-page). */
+  html, body {
+    overscroll-behavior: none;
+  }
   
   body {
     margin: 0;
@@ -78,5 +84,18 @@
     border-left: 5px solid #1B42CE
   }
 
+  /* Bar colours: "Soft Indigo". The Dashboard top bar (Header) reads --rtm-banner-*,
+     the breadcrumb bar on inner pages reads --rtm-crumb-*. Change them here. */
+  :root {
+    --rtm-banner-bg: linear-gradient(90deg, #E0E7FF 0%, #EDE9FE 100%);
+    --rtm-banner-text: #1E3A8A;
+    --rtm-banner-sub: #475569;
+    --rtm-crumb-bg: #EEF2FF;
+    --rtm-crumb-edge: 4px solid #1B42CE;
+  }
 
-  
+  /* Breadcrumb bar on every inner page */
+  .breadcrumbs {
+    background: var(--rtm-crumb-bg, #FFFFFF) !important;
+    border-left: var(--rtm-crumb-edge, 0 solid transparent);
+  }

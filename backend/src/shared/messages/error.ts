@@ -29,7 +29,6 @@ export enum Error {
   m028 = "Bookmarking is not allowed for locked terms",
   m029 = "Term is not found",
   m030 = "User is not found",
-  m031 = "Insufficient coins to purchase this volume.",
   m032 = "Script contains potentially harmful operations like DELETE or UPDATE. Please review the script before proceeding.",
   m033 = "Volume not found, please try again.",
   m034 = "Access denied",
@@ -40,4 +39,10 @@ export enum Error {
   m039 = "Password reset is not available right now. Please try again later.",
   m040 = "The code is incorrect or has expired. Please request a new one.",
   m041 = "Payments are not available right now. Please try again later.",
+  // Added with Kristine's admin work (her m034–m038, renumbered to avoid clashing with the ones above)
+  m042 = "Administrator access required",
+  m043 = "You can only access your own account",
+  m044 = "Import scripts may only contain one INSERT INTO term or termline with plain values.",
+  m045 = "Too many failed attempts. Please wait and try again.",
+  m046 = "Your session has expired. Please log in again.",
 }

@@ -23,6 +23,8 @@ export interface LoginRequest extends Request {
   User?: UserTable;
   AccessToken?: string;
   RefreshToken?: string;
+  /** Caller's account record, when a route has loaded it */
+  CurrentUser?: Pick<UserTable, "Id" | "AccountType" | "Email">;
 }
 
 export interface ModelResponse {

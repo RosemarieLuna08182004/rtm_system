@@ -1,3 +1,4 @@
+import { COUNTRY_CODES } from "../shared/data/countries";
 import * as yup from 'yup';
 import { Roles } from '../types'; // assuming Roles is an enum or array of possible role values
 
@@ -9,6 +10,7 @@ export const userValidator = () => {
       .required('Name is required'),
     Email: yup.string().email('Invalid email format').required('Email is required'),
     Password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+    Country: yup.string().oneOf(COUNTRY_CODES, 'Choose a country from the list').required('Country is required'),
   });
 };
 

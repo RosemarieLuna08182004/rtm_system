@@ -18,6 +18,7 @@ export enum ButtonColor {
 export interface CircleButtonProps {
   OnClick : any | GenericFunction
   IsNotification?: boolean
+  BadgeCount?: number
   Icon: ReactNode
   Type:ButtonType
   Color?:ButtonColor

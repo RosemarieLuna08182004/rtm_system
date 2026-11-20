@@ -8,7 +8,6 @@ export const termValidatorOnCreate = Joi.object({
     .optional(), // Only letters, no special characters or numbers
   Focus: Joi.string().allow(null).optional(),
   Definition: Joi.string().allow(null).optional(),
-  VoiceOver: Joi.string().allow(null).optional(),
   Illustration: Joi.string().allow(null).optional(),
   CreatedBy: Joi.number().integer().positive().optional(),
   DateCreated: Joi.date().iso().optional(),
@@ -22,7 +21,6 @@ export const termValidatorOnUpdate = Joi.object({
     .optional(), // Only letters, no special characters or numbers
   Focus: Joi.string().allow(null).optional(),
   Definition: Joi.string().allow(null).optional(),
-  VoiceOver: Joi.string().allow(null).optional(),
   Illustration: Joi.string().allow(null).optional(),
   UpdatedBy: Joi.number().integer().positive().optional(),
   DateUpdated: Joi.date().iso().optional(),

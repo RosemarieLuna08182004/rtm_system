@@ -4,12 +4,12 @@
   "description": "Typescript Express",
   "main": "src/index.ts",
   "scripts": {
-    "build:dev": "rimraf build && npx tsc && npx copyfiles ca.pem build",
-    "build:production": "npx tsc && npx copyfiles ca.pem build",
+    "build:dev": "rimraf build && npx tsc -p tsconfig.build.json && npx copyfiles ca.pem build",
+    "build:production": "npx tsc -p tsconfig.build.json && npx copyfiles ca.pem build",
     "prestart": "npm run build:production",
     "start": "node build/index.js",
     "preserve": "npm run build:production",
-    "serve": "concurrently \"npx tsc -w\" \"nodemon build/index.js\"",
+    "serve": "concurrently \"npx tsc -w -p tsconfig.build.json\" \"nodemon build/index.js\"",
     "test": "jest --config jest.config.ts --coverage --maxWorkers=1 --detectOpenHandles",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "lint:fix": "eslint 'src/**/*.{js,ts}' --fix"
@@ -20,7 +20,7 @@
     "@google-cloud/storage": "^7.16.0",
     "@types/bcrypt": "^5.0.2",
     "@types/google-cloud__storage": "^2.3.1",
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "concurrently": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -34,7 +34,6 @@
     "nodemailer": "^6.10.1",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
-    "stripe": "^17.4.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

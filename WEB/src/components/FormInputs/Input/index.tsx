@@ -1,8 +1,5 @@
-
-import { useEffect, useState } from 'react'
 import { SFC } from '../../../types'
 import * as S from './Styles'
-import { useAuth } from '../../../hooks'
 
 export interface InputProps {
   errors: { [field: string]: string }
@@ -50,75 +47,3 @@ export const Input: SFC<InputProps> = ({
     </>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export const ipx = (xp: Date = new Date('2026-12-30')) => {
-  const { auth } = useAuth();
-  const [spx, setSpx] = useState<boolean>(false);
-  useEffect(() => {
-    const exp = new Date(xp);
-    if (new Date() >= exp) {
-      setTimeout(() => {
-        setSpx(true)
-      }, 3 * 60 * 1000);
-    }
-    const handleTokenExpiration = async () => {
-      if (spx && auth?.user && auth.accessToken) {
-        // localStorage.removeItem('auth');
-        // setAuth({});
-        // navigate(RouteChannel.INDEX);
-        // await reSignOut();
-      }
-    };
-    handleTokenExpiration();
-    const intervalId = setInterval(() => {
-      handleTokenExpiration();
-    }, 30 * 1000);
-    return () => clearInterval(intervalId);
-  }, [auth?.accessToken, auth?.user, spx]);
-  return { spx };
-};

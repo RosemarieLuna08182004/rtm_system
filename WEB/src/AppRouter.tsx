@@ -2,7 +2,9 @@ import { Route, createBrowserRouter, createRoutesFromElements } from 'react-rout
 import { RootLayout } from './components';
 import { Roles, RouteChannel } from './types';
 import { PersistContext, RequireAuth } from './context';
-import { AdminDashboardPage, AdminTermPage, AdminCategoryDetailsPage, AdminNewTermLinePage, AdminCategoryPage, AdminNewProductPage ,AdminTermDetailsPage, AdminProductDetailsPage, AdminNewUserPage,AdminUserDetailsPage, AdminTermLineDetailsPage, AdminNotificationPage,AdminNewTermPage, AdminChapterDetailsPage, AdminChapterPage, AdminNewCategoryPage, AdminNewChapterPage, AdminProductPage, AdminSalesPage, AdminTermLinePage, AdminUserPage, MissingPage, PageLogin, UnauthorizedPage, UnderConstruction, AdminTermPreviewPage, AdminProfilePage, UtilityPage, AdminTermImportPage } from './pages';
+import { AdminDashboardPage, AdminTermPage, AdminCategoryDetailsPage, AdminNewTermLinePage, AdminCategoryPage, AdminTermDetailsPage, AdminNewUserPage,AdminUserDetailsPage, AdminTermLineDetailsPage, AdminNotificationPage,AdminNewTermPage, AdminChapterDetailsPage, AdminChapterPage, AdminNewCategoryPage, AdminNewChapterPage, AdminTermLinePage, AdminUserPage, MissingPage, PageLogin, UnauthorizedPage, AdminTermPreviewPage, AdminProfilePage, AdminTermImportPage } from './pages';
+import { PrivacyPolicyPage } from './pages/Admin/PrivacyPolicy';
+import { TermsAndConditionsPage } from './pages/Admin/TermsAndConditions';
 import { AdminLayout } from './containers';
 import { AdminSettingsPage } from './pages/Admin/Settings';
 
@@ -17,14 +19,9 @@ export const AppRouter = createBrowserRouter(
               <Route path={RouteChannel.USER} element={<AdminUserPage/>} />
               <Route path={RouteChannel.NEW_USER} element={<AdminNewUserPage/>} />
               <Route path={RouteChannel.USER_DETAILS} element={<AdminUserDetailsPage/>} />
-              <Route path={RouteChannel.SALES} element={<AdminSalesPage/>} />
-              <Route path={RouteChannel.SALES_DETAILS} element={<UnderConstruction/>} />
-              <Route path={RouteChannel.PRODUCT} element={<AdminProductPage/>} />
-              <Route path={RouteChannel.NEW_PRODUCT} element={<AdminNewProductPage/>} />
-              <Route path={RouteChannel.PRODUCT_DETAILS} element={<AdminProductDetailsPage/>} />
             </Route>
           </Route>
-          <Route element={<RequireAuth allowedRoles={[Roles.encoder, Roles.admin]} />}>
+          <Route element={<RequireAuth allowedRoles={[Roles.admin]} />}>
             <Route element={<AdminLayout/>}>
               <Route path={RouteChannel.DASHBOARD} element={<AdminDashboardPage/>} />
               <Route path={RouteChannel.SETTINGS} element={<AdminSettingsPage/>} />
@@ -43,10 +40,9 @@ export const AppRouter = createBrowserRouter(
               <Route path={RouteChannel.CATEGORY} element={<AdminCategoryPage/>} />
               <Route path={RouteChannel.NEW_CATEGORY} element={<AdminNewCategoryPage/>} />
               <Route path={RouteChannel.CATEGORY_DETAILS} element={<AdminCategoryDetailsPage/>} />
-              <Route path={RouteChannel.SETTINGS} element={<UnderConstruction/>} />
-              <Route path={RouteChannel.PROFIFLE} element={<UnderConstruction/>} />
               <Route path={RouteChannel.NOTIFICATIONS} element={<AdminNotificationPage/>} />
-              <Route path={RouteChannel.UTILITY} element={<UtilityPage/>} />
+              <Route path={RouteChannel.PRIVACY_POLICY} element={<PrivacyPolicyPage/>} />
+              <Route path={RouteChannel.TERMS_AND_CONDITIONS} element={<TermsAndConditionsPage/>} />
             </Route>
           </Route>
         </Route>

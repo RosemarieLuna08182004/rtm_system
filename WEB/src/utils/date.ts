@@ -4,7 +4,7 @@ import { displayToast } from "./toast";
 export const formatDateToMMDDYY = (isoDateString: string) => {
     try {
         const date = new Date(isoDateString);
-        //if (isNaN(date.getTime())) throw new Error("Invalid date");
+        if (isNaN(date.getTime())) throw new Error("Invalid date");
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const year = String(date.getFullYear());
@@ -17,11 +17,11 @@ export const formatDateToMMDDYY = (isoDateString: string) => {
 export const formatDate = (isoDateString: string) => {
     try {
         const date = new Date(isoDateString);
-        //if (isNaN(date.getTime())) throw new Error("Invalid date");
+        if (isNaN(date.getTime())) throw new Error("Invalid date");
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const year = String(date.getFullYear());
-        const hr = String(date.getHours() + 1).padStart(2, '0');
+        const hr = String(date.getHours()).padStart(2, '0');
         const min = String(date.getMinutes()).padStart(2, '0');
         const sec = String(date.getSeconds()).padStart(2, '0');
         return `${year}-${month}-${day} ${hr}:${min}:${sec}`;

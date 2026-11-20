@@ -4,7 +4,7 @@ import { sign } from "jsonwebtoken";
 import { ModelResponse } from "../../../types";
 
 export const refreshToken = async (UserId: number = 0): Promise<ModelResponse> => {
-    try {   
+    try {
         if (!UserId || typeof UserId !== 'number' || isNaN(UserId)) return { data:null, message: Error.m012 }
         if (!SECRET_REFRESH_KEY) return { data:null, message: Error.m013 }
         // `type` keeps a refresh token from ever being accepted as an access token.
@@ -13,7 +13,7 @@ export const refreshToken = async (UserId: number = 0): Promise<ModelResponse> =
         return { data:token, message: Success.m008 }
     } catch (error: any ) {
         logging.log("----------------------------------------");
-        logging.error("Generate-Fn [accessToken]:", error.message);
+        logging.error("Generate-Fn [refreshToken]:", error.message);
         logging.log("----------------------------------------");
         return { data: null, message: Error.m001 };
     }

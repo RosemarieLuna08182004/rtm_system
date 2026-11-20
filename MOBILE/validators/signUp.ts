@@ -20,4 +20,6 @@ export const singUpValidator = yup.object().shape({
   Password: yup.string()
     .required('Password is required')
     .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`),
+  Country: yup.string()
+    .required('Please choose your country'),
 });
