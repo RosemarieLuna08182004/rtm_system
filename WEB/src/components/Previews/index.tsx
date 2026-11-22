@@ -28,7 +28,8 @@ const CategoryHeading = ({ children }: { children: React.ReactNode }) => (
 /** The whole term as learners see it: illustration and sub terms by category. */
 export const TermPreview: SFC<{ TermId: number }> = ({ ClassName, TermId }) => {
     const { records, loading, refetch } = useGetTerm(TermId);
-    if (loading) return <Skeleton ClassName="py-8 w-full" />;
+    // Spinner only for the first load; later reloads (e.g. after adding a sub term) keep the card on screen
+    if (loading && !records?.Term) return <Skeleton ClassName="py-8 w-full" />;
     return (
         <TermCard ClassName={ClassName} Illustration={records.Illustration ?? ""} Refetch={refetch}
             ChapterTitle={records.ChapterTitle ?? ''} TermId={TermId} TermTitle={records.Term ?? ""} Definition={records.Definition ?? ""} Focus={records.Focus ?? ""} />

@@ -5,7 +5,7 @@ import { useGetAllTermLineByTerm, useToggle } from "../../../hooks";
 import AddIcon from '@mui/icons-material/Add';
 import { SubTermModal } from "../../../modals";
 import { twMerge } from "tailwind-merge";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import React from "react";
 import { SubTermCard } from "../SubTermCard";
 import { Skeleton } from "../../Skeleton";
@@ -15,9 +15,8 @@ export const TermCard: SFC<TermCardProps> = ({ ClassName, Refetch, TermId, TermT
     const [modalOpen, toggleModal] = useToggle(false);
     const { records, refetch, loading } = useGetAllTermLineByTerm(TermId);
 
-    useEffect(() => {
-        Refetch();
-    }, [Refetch, TermId]);
+    // No reload on mount: the parent page already loads the term. (Reloading here made the
+    // parent show its spinner, which removed this card, which reloaded again: an endless loop.)
 
     const handleModalClose = () => {
         toggleModal();
