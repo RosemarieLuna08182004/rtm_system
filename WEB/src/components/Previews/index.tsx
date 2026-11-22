@@ -28,7 +28,9 @@ const CategoryHeading = ({ children }: { children: React.ReactNode }) => (
 /** The whole term as learners see it: illustration and sub terms by category. */
 export const TermPreview: SFC<{ TermId: number }> = ({ ClassName, TermId }) => {
     const { records, loading, refetch } = useGetTerm(TermId);
-    if (loading) return <Skeleton ClassName="py-8 w-full" />;
+    // Placeholder only until this term first arrives. Hiding the card on later reloads made it
+    // mount again, and TermCard reloads the term when it mounts: an endless loading loop.
+    if (loading && Number(records?.Id) !== TermId) return <Skeleton ClassName="py-8 w-full" />;
     return (
         <TermCard ClassName={ClassName} Illustration={records.Illustration ?? ""} Refetch={refetch}
             ChapterTitle={records.ChapterTitle ?? ''} TermId={TermId} TermTitle={records.Term ?? ""} Definition={records.Definition ?? ""} Focus={records.Focus ?? ""} />
