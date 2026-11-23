@@ -55,24 +55,12 @@ export class StorageController {
                 return res.status(400).json({ data: null, message: 'Term ID is required' });
             }
 
-            // Get the current term to check if it has an existing illustration
+            // Remember the current illustration so it can be removed once the new one is saved
             const terms = await GetService.byId(parseInt(termId, 10), DBTable.t005);
-            const term = terms[0];
-            
-            // If there's an existing illustration, delete it from storage
-            if (term?.Illustration) {
-                try {
-                    await storageService.deleteFile(term.Illustration);
-                } catch (error) {
-                    console.warn('Failed to delete old illustration:', error);
-                    // Continue with upload even if delete fails
-                }
-            }
+            const previous: string | null = terms[0]?.Illustration || null;
 
-            // Upload file to Google Cloud Storage
+            // Upload first and save it on the term: if either step fails, the old picture is untouched
             const fileUrl = await storageService.uploadFile(req.file, 'terms');
-
-            // Update the term with the illustration URL
             await UpdateService.record(
                 parseInt(termId, 10),
                 DBTable.t005, // term table
@@ -80,6 +68,15 @@ export class StorageController {
                 [String],
                 [fileUrl]
             );
+
+            // Only now remove the old file; a failure here just leaves an unused file behind
+            if (previous && previous !== fileUrl) {
+                try {
+                    await storageService.deleteFile(previous);
+                } catch (error) {
+                    console.warn('Failed to delete old illustration:', error);
+                }
+            }
 
             return res.status(200).json({
                 data: { url: fileUrl },

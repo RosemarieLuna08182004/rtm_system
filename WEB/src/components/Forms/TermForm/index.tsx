@@ -41,8 +41,9 @@ export const TermForm: SFC<FormProps> = ({ ClassName, Title = 'NA', Description,
     const initial: TermTable = {
     ChapterId: records?.ChapterId ?? 0,
     Term: records?.Term ?? null,
-    Focus: null,
-    Definition: null,
+    // Start from the saved values: empty here would erase them on the next save.
+    Focus: records?.Focus ?? null,
+    Definition: records?.Definition ?? null,
     Illustration: typeof records?.Illustration === 'string' ? records.Illustration : ''
 }
     const { records: ChapterTitle, loading:ChapterTitleLoad } = useGetChapter(records?.ChapterId || 0)
