@@ -27,12 +27,12 @@ class StorageService {
                 },
             };
 
-            // Create a write stream with public access
+            // The bucket uses uniform bucket-level access and is already public, so files must not
+            // ask for a per-file public ACL: Google rejects that ("Cannot insert legacy ACL").
             const blobStream = blob.createWriteStream({
                 metadata: metadata,
                 resumable: false,
                 validation: 'md5',
-                public: true  // This will make the file publicly accessible
             });
 
             return new Promise((resolve, reject) => {
